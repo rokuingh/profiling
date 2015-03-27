@@ -1,6 +1,7 @@
 # This is an ESMPy benchmarking utility
 import ESMF
 import numpy as np
+import time
 
 def create_grid_corners(lons, lats, lonbnds, latbnds):
     [lon, lat] = [0, 1]
@@ -15,10 +16,6 @@ def create_grid_corners(lons, lats, lonbnds, latbnds):
     gridYCenter = grid.get_coords(lat)
     lat_par = lats[grid.lower_bounds[ESMF.StaggerLoc.CENTER][lat]:grid.upper_bounds[ESMF.StaggerLoc.CENTER][lat]]
     gridYCenter[...] = lat_par.reshape((1, lat_par.size))
-
-    lon_par2d, lat_par2d = np.meshgrid(lon_par, lat_par, indexing="ij")
-
-    #import ipdb; ipdb.set_trace()
 
     lbx = grid.lower_bounds[ESMF.StaggerLoc.CORNER][lon]
     ubx = grid.upper_bounds[ESMF.StaggerLoc.CORNER][lon]
@@ -124,19 +121,31 @@ dstfield = ESMF.Field(dstgrid, "dstfield", staggerloc=ESMF.StaggerLoc.CENTER)
 srcfield = initialize_field(srcfield)
 xctfield = initialize_field(xctfield)
 
+timing=[]
+
+timing.append(time.time())
+
 # Regrid from source grid to destination grid.
 regridSrc2Dst = ESMF.Regrid(srcfield, dstfield,
                             regrid_method=ESMF.RegridMethod.CONSERVE,
                             unmapped_action=ESMF.UnmappedAction.IGNORE)
 
+timing.append(time.time())
+
 dstfield = regridSrc2Dst(srcfield, dstfield)
+
+timing.append(time.time())
 
 regridSrc2Dst = ESMF.Regrid(dstfield, srcfield,
                             regrid_method=ESMF.RegridMethod.CONSERVE,
                             unmapped_action=ESMF.UnmappedAction.IGNORE)
 
+timing.append(time.time())
+
 srcfield = regridSrc2Dst(dstfield, srcfield)
 
-print "Interpolation error = {}".format(np.sum(np.abs(srcfield.data - xctfield.data)/np.abs(xctfield.data))/xctfield.size)
+timing.append(time.time())
 
+print "Interpolation error = {}".format(np.sum(np.abs(srcfield.data - xctfield.data)/np.abs(xctfield.data))/xctfield.size)
+print "Regrid time = {0}".format(timing[1]-timing[0])
 #plot(srclons, srclats, srcfield, dstlons, dstlats, dstfield)
