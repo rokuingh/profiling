@@ -105,11 +105,11 @@ def plot(srclons, srclats, srcfield, dstlons, dstlats, interpfield):
 #esmpy = ESMF.Manager(debug=True)
 
 DATADIR = "/glade/p/work/rokuingh/data/"
-DATADIR = "/Users/ryan.okuinghttons/netCDFfiles/grids/"
+#DATADIR = "/Users/ryan.okuinghttons/netCDFfiles/grids/"
 grid1 = [DATADIR+"hycom_grid1.nc", ESMF.FileFormat.GRIDSPEC]
-grid1 = [DATADIR+"ll2.5deg_grid.nc", ESMF.FileFormat.SCRIP]
+#grid1 = [DATADIR+"ll2.5deg_grid.nc", ESMF.FileFormat.SCRIP]
 grid2 = [DATADIR+"tx0.1v2_nomask.nc", ESMF.FileFormat.SCRIP]
-grid2 = [DATADIR+"T42_grid.nc", ESMF.FileFormat.SCRIP]
+#grid2 = [DATADIR+"T42_grid.nc", ESMF.FileFormat.SCRIP]
 
 
 # Create a destination grid from a GRIDSPEC formatted file.

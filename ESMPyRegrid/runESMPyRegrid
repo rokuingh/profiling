@@ -1,0 +1,13 @@
+#!/bin/bash
+#
+#BSUB -W 00:10
+#BSUB -q regular
+#BSUB -n 4
+#BSUB -J ESMPyRegrid.py
+#BSUB -P P35071400
+#BSUB -oo ESMPyRegrid.out
+
+module load python all-python-libs
+export PYTHONPATH="/glade/u/home/rokuingh/esmf/src/addon/ESMPy/src:$PYTHONPATH"
+
+mpirun.lsf python regrid.py
