@@ -100,7 +100,7 @@ def plot(srclons, srclats, srcfield, dstlons, dstlats, interpfield):
 
 # start Manager and set the regrid method
 esmpy = ESMF.Manager(debug=False)
-rm = ESMF.RegridMethod.PATCH
+rm = ESMF.RegridMethod.BILINEAR
 
 # bienvenidos!
 if esmpy.local_pet == 0:
@@ -109,8 +109,7 @@ if esmpy.local_pet == 0:
     print "PET count, "+str(esmpy.pet_count)+"\n"
 
 # create a benchmark deque
-from collections import deque
-bm = deque()
+bm = []
 
 # yellowstone initialize data
 DATADIR = "/glade/p/work/rokuingh/data/"
@@ -118,9 +117,9 @@ grid1 = [DATADIR+"hycom_grid1.nc", ESMF.FileFormat.GRIDSPEC]
 grid2 = [DATADIR+"tx0.1v2_nomask.nc", ESMF.FileFormat.SCRIP]
 
 # local initialize data
-# DATADIR = "/Users/ryan.okuinghttons/netCDFfiles/grids/"
-# grid1 = [DATADIR+"ll2.5deg_grid.nc", ESMF.FileFormat.SCRIP]
-# grid2 = [DATADIR+"T42_grid.nc", ESMF.FileFormat.SCRIP]
+DATADIR = "/Users/ryan.okuinghttons/netCDFfiles/grids/"
+grid1 = [DATADIR+"ll2.5deg_grid.nc", ESMF.FileFormat.SCRIP]
+grid2 = [DATADIR+"T42_grid.nc", ESMF.FileFormat.SCRIP]
 
 # Create Grids
 
@@ -182,9 +181,18 @@ bm.append((time.time(), 'regrid1 run'))
 relerr = np.sum(np.abs(dstfield.data - xctfield.data)/np.abs(xctfield.data))
 num_nodes = xctfield.size
 
-bm_list = []
-for x,y in bm:
-    bm_list.append(x-bm[0][0])
+# clean up timings
+timings = []
+titles = []
+for x, y in bm:
+    timings.append(x)
+    titles.append(y)
+
+timings = (np.array(timings[1:]) - np.array(timings[0:-1])).tolist()
+timings.pop(2)
+
+titles.pop(0)
+titles.pop(2)
 
 # handle the parallel case
 if esmpy.pet_count > 1:
@@ -195,15 +203,13 @@ if esmpy.pet_count > 1:
     comm = MPI.COMM_WORLD
     relerr = comm.reduce(relerr, op=MPI.SUM)
     num_nodes = comm.reduce(num_nodes, op=MPI.SUM)
-    bm_list = comm.reduce(bm_list, op=MPI.SUM)
-
-
-timings = [np.array(bm_list[1:])-np.array(bm_list[0:-1])]
+    timings = comm.reduce(timings, op=MPI.SUM)
 
 # Output results and verify error is reasonable
 if esmpy.local_pet == 0:
-    print timings
-    print "Regridding error = "+str(relerr/num_nodes)
+    for x in range(len(titles)):
+        print str(titles[x])+", "+str(timings[x])
+    print "\nRegridding error = "+str(relerr/num_nodes)
 
 
 #plot(srclons, srclats, srcfield, dstlons, dstlats, dstfield)
