@@ -100,7 +100,7 @@ def plot(srclons, srclats, srcfield, dstlons, dstlats, interpfield):
 
 # start Manager and set the regrid method
 esmpy = ESMF.Manager(debug=False)
-rm = ESMF.RegridMethod.BILINEAR
+rm = ESMF.RegridMethod.PATCH
 
 # bienvenidos!
 if esmpy.local_pet == 0:
@@ -197,13 +197,13 @@ if esmpy.pet_count > 1:
     num_nodes = comm.reduce(num_nodes, op=MPI.SUM)
     bm_list = comm.reduce(bm_list, op=MPI.SUM)
 
+
+timings = [np.array(bm_list[1:])-np.array(bm_list[0:-1])]
+
 # Output results and verify error is reasonable
 if esmpy.local_pet == 0:
-    iter = 0
-    for x,y in bm:
-        print y+", "+str(bm_list[iter])
-        iter += 1
-    assert (relerr/num_nodes < 10e-5)
+    print timings
+    print "Regridding error = "+str(relerr/num_nodes)
 
 
 #plot(srclons, srclats, srcfield, dstlons, dstlats, dstfield)

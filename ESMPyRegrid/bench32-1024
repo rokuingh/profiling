@@ -4,8 +4,8 @@
 #
 
 sed 's/%np%/32/g' < runESMPyRegrid | bsub
-sed 's/%np%/64/g' < runESMPyRegrid | bsub
-sed 's/%np%/128/g' < runESMPyRegrid | bsub
-sed 's/%np%/256/g' < runESMPyRegrid | bsub
-sed 's/%np%/512/g' < runESMPyRegrid | bsub
-sed 's/%np%/1024/g' < runESMPyRegrid | bsub
+#sed 's/%np%/64/g' < runESMPyRegrid | bsub
+#sed 's/%np%/128/g' < runESMPyRegrid | bsub
+#sed 's/%np%/256/g' < runESMPyRegrid | bsub
+#sed 's/%np%/512/g' < runESMPyRegrid | bsub
+#sed 's/%np%/1024/g' < runESMPyRegrid | bsub
