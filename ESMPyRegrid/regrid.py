@@ -98,21 +98,43 @@ def plot(srclons, srclats, srcfield, dstlons, dstlats, interpfield):
 ##########################################################################################
 
 
-# Start up ESMF, this call is only necessary to enable debug logging
-#esmpy = ESMF.Manager(debug=True)
+# start Manager and set the regrid method
+esmpy = ESMF.Manager()
+rm = ESMF.RegridMethod.CONSERVE
 
+# bienvenidos!
+if esmpy.local_pet == 0:
+    print "ESMPy Benchmark"+"\n"
+    print "regrid method, "+str(rm)
+    print "PET count, "+str(esmpy.pet_count)+"\n"
+
+# create a benchmark deque
+from collections import deque
+bm = deque()
+
+# yellowstone initialize data
 DATADIR = "/glade/p/work/rokuingh/data/"
-#DATADIR = "/Users/ryan.okuinghttons/netCDFfiles/grids/"
 grid1 = [DATADIR+"hycom_grid1.nc", ESMF.FileFormat.GRIDSPEC]
-#grid1 = [DATADIR+"ll2.5deg_grid.nc", ESMF.FileFormat.SCRIP]
 grid2 = [DATADIR+"tx0.1v2_nomask.nc", ESMF.FileFormat.SCRIP]
-#grid2 = [DATADIR+"T42_grid.nc", ESMF.FileFormat.SCRIP]
 
+# local initialize data
+# DATADIR = "/Users/ryan.okuinghttons/netCDFfiles/grids/"
+# grid1 = [DATADIR+"ll2.5deg_grid.nc", ESMF.FileFormat.SCRIP]
+# grid2 = [DATADIR+"T42_grid.nc", ESMF.FileFormat.SCRIP]
 
-# Create a destination grid from a GRIDSPEC formatted file.
+# Create Grids
+
+bm.append((time.time(), 'start'))
+
 srcgrid = ESMF.Grid(filename=grid1[0], filetype=grid1[1], add_corner_stagger=True)
 
+bm.append((time.time(), 'grid1create'))
+
 dstgrid = ESMF.Grid(filename=grid2[0], filetype=grid2[1], add_corner_stagger=True)
+
+bm.append((time.time(), 'grid2create'))
+
+# Create and initialize Fields
 
 srcfield = ESMF.Field(srcgrid, "srcfield", staggerloc=ESMF.StaggerLoc.CENTER)
 xctfield = ESMF.Field(srcgrid, "xctfield", staggerloc=ESMF.StaggerLoc.CENTER)
@@ -121,31 +143,67 @@ dstfield = ESMF.Field(dstgrid, "dstfield", staggerloc=ESMF.StaggerLoc.CENTER)
 srcfield = initialize_field(srcfield)
 xctfield = initialize_field(xctfield)
 
-timing=[]
+bm.append((time.time(), 'junk'))
 
-timing.append(time.time())
-
-# Regrid from source grid to destination grid.
+# Regrid from source grid to destination grid
 regridSrc2Dst = ESMF.Regrid(srcfield, dstfield,
-                            regrid_method=ESMF.RegridMethod.CONSERVE,
+                            regrid_method=rm,
                             unmapped_action=ESMF.UnmappedAction.IGNORE)
 
-timing.append(time.time())
+bm.append((time.time(), 'regrid1 store'))
 
+# Apply regridding weights
 dstfield = regridSrc2Dst(srcfield, dstfield)
 
-timing.append(time.time())
+bm.append((time.time(), 'regrid1 run'))
 
+# Regrid from destination to source grid
 regridSrc2Dst = ESMF.Regrid(dstfield, srcfield,
-                            regrid_method=ESMF.RegridMethod.CONSERVE,
+                            regrid_method=rm,
                             unmapped_action=ESMF.UnmappedAction.IGNORE)
 
-timing.append(time.time())
+bm.append((time.time(), 'regrid2 store'))
 
+# Apply regridding weights
 srcfield = regridSrc2Dst(dstfield, srcfield)
 
-timing.append(time.time())
+bm.append((time.time(), 'regrid2 run'))
 
-print "Interpolation error = {}".format(np.sum(np.abs(srcfield.data - xctfield.data)/np.abs(xctfield.data))/xctfield.size)
-print "Regrid time = {0}".format(timing[1]-timing[0])
+# Compute pointwise relative error
+relerr = np.sum(np.abs(srcfield.data - xctfield.data)/np.abs(xctfield.data))
+num_nodes = xctfield.size
+
+bm_list = []
+for x,y in bm:
+    bm_list.append(x-bm[0][0])
+
+# handle the parallel case
+if esmpy.pet_count > 1:
+    try:
+        from mpi4py import MPI
+    except:
+        raise ImportError
+    comm = MPI.COMM_WORLD
+    relerr = comm.reduce(relerr, op=MPI.SUM)
+    num_nodes = comm.reduce(num_nodes, op=MPI.SUM)
+    bm_list = comm.reduce(bm_list, op=MPI.SUM)
+
+# Output results and verify error is reasonable
+if esmpy.local_pet == 0:
+    iter = 0
+    for x,y in bm:
+        print y+", "+str(bm_list[iter])
+        iter += 1
+    assert (relerr/num_nodes < 10e-5)
+
+
 #plot(srclons, srclats, srcfield, dstlons, dstlats, dstfield)
+
+# collect garbage
+srcgrid.destroy()
+dstgrid.destroy()
+srcfield.destroy()
+dstfield.destroy()
+xctfield.destroy()
+regridSrc2Dst.destroy()
+
