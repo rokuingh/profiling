@@ -99,7 +99,7 @@ def plot(srclons, srclats, srcfield, dstlons, dstlats, interpfield):
 
 
 # start Manager and set the regrid method
-esmpy = ESMF.Manager()
+esmpy = ESMF.Manager(debug=True)
 rm = ESMF.RegridMethod.CONSERVE
 
 # bienvenidos!
@@ -137,7 +137,7 @@ bm.append((time.time(), 'grid2create'))
 # Create and initialize Fields
 
 srcfield = ESMF.Field(srcgrid, "srcfield", staggerloc=ESMF.StaggerLoc.CENTER)
-xctfield = ESMF.Field(srcgrid, "xctfield", staggerloc=ESMF.StaggerLoc.CENTER)
+xctfield = ESMF.Field(dstgrid, "xctfield", staggerloc=ESMF.StaggerLoc.CENTER)
 dstfield = ESMF.Field(dstgrid, "dstfield", staggerloc=ESMF.StaggerLoc.CENTER)
 
 srcfield = initialize_field(srcfield)
@@ -155,22 +155,22 @@ bm.append((time.time(), 'regrid1 store'))
 # Apply regridding weights
 dstfield = regridSrc2Dst(srcfield, dstfield)
 
-bm.append((time.time(), 'regrid1 run'))
-
-# Regrid from destination to source grid
-regridSrc2Dst = ESMF.Regrid(dstfield, srcfield,
-                            regrid_method=rm,
-                            unmapped_action=ESMF.UnmappedAction.IGNORE)
-
-bm.append((time.time(), 'regrid2 store'))
-
-# Apply regridding weights
-srcfield = regridSrc2Dst(dstfield, srcfield)
-
-bm.append((time.time(), 'regrid2 run'))
+# bm.append((time.time(), 'regrid1 run'))
+#
+# # Regrid from destination to source grid
+# regridSrc2Dst = ESMF.Regrid(dstfield, srcfield,
+#                             regrid_method=rm,
+#                             unmapped_action=ESMF.UnmappedAction.IGNORE)
+#
+# bm.append((time.time(), 'regrid2 store'))
+#
+# # Apply regridding weights
+# srcfield = regridSrc2Dst(dstfield, srcfield)
+#
+# bm.append((time.time(), 'regrid2 run'))
 
 # Compute pointwise relative error
-relerr = np.sum(np.abs(srcfield.data - xctfield.data)/np.abs(xctfield.data))
+relerr = np.sum(np.abs(dstfield.data - xctfield.data)/np.abs(xctfield.data))
 num_nodes = xctfield.size
 
 bm_list = []
