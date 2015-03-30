@@ -99,8 +99,8 @@ def plot(srclons, srclats, srcfield, dstlons, dstlats, interpfield):
 
 
 # start Manager and set the regrid method
-esmpy = ESMF.Manager(debug=True)
-rm = ESMF.RegridMethod.CONSERVE
+esmpy = ESMF.Manager(debug=False)
+rm = ESMF.RegridMethod.BILINEAR
 
 # bienvenidos!
 if esmpy.local_pet == 0:
@@ -126,11 +126,19 @@ grid2 = [DATADIR+"tx0.1v2_nomask.nc", ESMF.FileFormat.SCRIP]
 
 bm.append((time.time(), 'start'))
 
-srcgrid = ESMF.Grid(filename=grid1[0], filetype=grid1[1], add_corner_stagger=True)
+srcgrid = None
+if rm == ESMF.RegridMethod.CONSERVE:
+    srcgrid = ESMF.Grid(filename=grid1[0], filetype=grid1[1], add_corner_stagger=True)
+else:
+    srcgrid = ESMF.Grid(filename=grid1[0], filetype=grid1[1])
 
 bm.append((time.time(), 'grid1create'))
 
-dstgrid = ESMF.Grid(filename=grid2[0], filetype=grid2[1], add_corner_stagger=True)
+dstgrid = None
+if rm == ESMF.RegridMethod.CONSERVE:
+    dstgrid = ESMF.Grid(filename=grid2[0], filetype=grid2[1], add_corner_stagger=True)
+else:
+    dstgrid = ESMF.Grid(filename=grid2[0], filetype=grid2[1])
 
 bm.append((time.time(), 'grid2create'))
 
@@ -148,6 +156,7 @@ bm.append((time.time(), 'junk'))
 # Regrid from source grid to destination grid
 regridSrc2Dst = ESMF.Regrid(srcfield, dstfield,
                             regrid_method=rm,
+                            pole_method=ESMF.PoleMethod.NONE,
                             unmapped_action=ESMF.UnmappedAction.IGNORE)
 
 bm.append((time.time(), 'regrid1 store'))
@@ -155,8 +164,8 @@ bm.append((time.time(), 'regrid1 store'))
 # Apply regridding weights
 dstfield = regridSrc2Dst(srcfield, dstfield)
 
-# bm.append((time.time(), 'regrid1 run'))
-#
+bm.append((time.time(), 'regrid1 run'))
+
 # # Regrid from destination to source grid
 # regridSrc2Dst = ESMF.Regrid(dstfield, srcfield,
 #                             regrid_method=rm,

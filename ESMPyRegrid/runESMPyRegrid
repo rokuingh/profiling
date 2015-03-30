@@ -1,11 +1,15 @@
 #!/bin/bash
 #
-#BSUB -W 00:10
-#BSUB -q regular
-#BSUB -n 4
-#BSUB -J ESMPyRegrid.py
+#BSUB -J ESMPyRegrid%np%
 #BSUB -P P35071400
-#BSUB -oo ESMPyRegrid.out
+#BSUB -W 00:30
+#BSUB -q regular
+#BSUB -n %np%
+#BSUB -R "span[ptile=4]"
+#BSUB -o ESMPyRegrid%np%.out
+#BSUB -e ESMPyRegrid%np%.err
+#BSUB -N
+
 
 module load python all-python-libs
 export PYTHONPATH="/glade/u/home/rokuingh/esmf/src/addon/ESMPy/src:$PYTHONPATH"
