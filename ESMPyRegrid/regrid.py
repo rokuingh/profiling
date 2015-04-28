@@ -100,7 +100,7 @@ def plot(srclons, srclats, srcfield, dstlons, dstlats, interpfield):
 
 # start Manager and set the regrid method
 esmpy = ESMF.Manager(debug=False)
-rm = ESMF.RegridMethod.BILINEAR
+rm = ESMF.RegridMethod.CONSERVE
 
 # bienvenidos!
 if esmpy.local_pet == 0:
@@ -117,9 +117,9 @@ grid1 = [DATADIR+"hycom_grid1.nc", ESMF.FileFormat.GRIDSPEC]
 grid2 = [DATADIR+"tx0.1v2_nomask.nc", ESMF.FileFormat.SCRIP]
 
 # local initialize data
-DATADIR = "/Users/ryan.okuinghttons/netCDFfiles/grids/"
-grid1 = [DATADIR+"ll2.5deg_grid.nc", ESMF.FileFormat.SCRIP]
-grid2 = [DATADIR+"T42_grid.nc", ESMF.FileFormat.SCRIP]
+# DATADIR = "/Users/ryan.okuinghttons/netCDFfiles/grids/"
+# grid1 = [DATADIR+"ll2.5deg_grid.nc", ESMF.FileFormat.SCRIP]
+# grid2 = [DATADIR+"T42_grid.nc", ESMF.FileFormat.SCRIP]
 
 # Create Grids
 
@@ -156,7 +156,8 @@ bm.append((time.time(), 'junk'))
 regridSrc2Dst = ESMF.Regrid(srcfield, dstfield,
                             regrid_method=rm,
                             pole_method=ESMF.PoleMethod.NONE,
-                            unmapped_action=ESMF.UnmappedAction.IGNORE)
+                            unmapped_action=ESMF.UnmappedAction.IGNORE,
+                            ignore_degenerate=True)
 
 bm.append((time.time(), 'regrid1 store'))
 
