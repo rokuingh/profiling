@@ -100,7 +100,7 @@ def plot(srclons, srclats, srcfield, dstlons, dstlats, interpfield):
 
 # start Manager and set the regrid method
 esmpy = ESMF.Manager(debug=False)
-rm = ESMF.RegridMethod.CONSERVE
+rm = ESMF.RegridMethod.BILINEAR
 
 # bienvenidos!
 if esmpy.local_pet == 0:
