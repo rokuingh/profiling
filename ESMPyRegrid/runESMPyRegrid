@@ -14,4 +14,5 @@
 module load python all-python-libs
 export PYTHONPATH="/glade/u/home/rokuingh/esmf/src/addon/ESMPy/src:$PYTHONPATH"
 
-mpirun.lsf python regrid.py
+# regrid method: BILINEAR=0, PATCH=1, CONSERVE=2, NEAREST_STOD=3, NEAREST_DTOS=4
+mpirun.lsf python regrid.py 0
