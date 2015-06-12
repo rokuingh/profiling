@@ -1,6 +1,7 @@
 # This is an ESMPy benchmarking utility
 import ESMF
 import numpy as np
+from mpi4py import MPI
 import time
 import sys
 
@@ -99,15 +100,12 @@ def plot(srclons, srclats, srcfield, dstlons, dstlats, interpfield):
 ##########################################################################################
 
 
-# start Manager and set the regrid method
+# use debugging?
 esmpy = ESMF.Manager(debug=False)
+# mpi comm handle
+comm = MPI.COMM_WORLD
+# regrid method from input argument
 rm = int(sys.argv[1])
-
-# bienvenidos!
-if esmpy.local_pet == 0:
-    print "ESMPy Benchmark"+"\n"
-    print "regrid method, "+str(rm)
-    print "PET count, "+str(esmpy.pet_count)+"\n"
 
 # create a benchmark deque
 bm = []
@@ -128,7 +126,8 @@ else:
 
 # Create Grids
 
-bm.append((time.time(), 'start'))
+# timing
+start = time.time()
 
 srcgrid = None
 if rm == ESMF.RegridMethod.CONSERVE:
@@ -136,7 +135,10 @@ if rm == ESMF.RegridMethod.CONSERVE:
 else:
     srcgrid = ESMF.Grid(filename=grid1[0], filetype=grid1[1])
 
-bm.append((time.time(), 'grid1create'))
+# timing
+end = time.time()
+bm.append(('grid1create', start, end))
+start = time.time()
 
 dstgrid = None
 if rm == ESMF.RegridMethod.CONSERVE:
@@ -144,7 +146,9 @@ if rm == ESMF.RegridMethod.CONSERVE:
 else:
     dstgrid = ESMF.Grid(filename=grid2[0], filetype=grid2[1])
 
-bm.append((time.time(), 'grid2create'))
+# timing
+end = time.time()
+bm.append(('grid2create', start, end))
 
 # Create and initialize Fields
 
@@ -155,7 +159,11 @@ dstfield = ESMF.Field(dstgrid, "dstfield", staggerloc=ESMF.StaggerLoc.CENTER)
 srcfield = initialize_field(srcfield)
 xctfield = initialize_field(xctfield)
 
-bm.append((time.time(), 'junk'))
+# barrier before regrid store
+comm.Barrier()
+
+# timing
+start = time.time()
 
 # Regrid from source grid to destination grid
 regridSrc2Dst = ESMF.Regrid(srcfield, dstfield,
@@ -164,24 +172,22 @@ regridSrc2Dst = ESMF.Regrid(srcfield, dstfield,
                             unmapped_action=ESMF.UnmappedAction.IGNORE,
                             ignore_degenerate=True)
 
-bm.append((time.time(), 'regrid1 store'))
+# timing
+end = time.time()
+bm.append(('regrid store', start, end))
+
+# barrier before regrid application
+comm.Barrier()
+
+# timing
+start = time.time()
 
 # Apply regridding weights
 dstfield = regridSrc2Dst(srcfield, dstfield)
 
-bm.append((time.time(), 'regrid1 run'))
-
-# # Regrid from destination to source grid
-# regridSrc2Dst = ESMF.Regrid(dstfield, srcfield,
-#                             regrid_method=rm,
-#                             unmapped_action=ESMF.UnmappedAction.IGNORE)
-#
-# bm.append((time.time(), 'regrid2 store'))
-#
-# # Apply regridding weights
-# srcfield = regridSrc2Dst(dstfield, srcfield)
-#
-# bm.append((time.time(), 'regrid2 run'))
+# timing
+end = time.time()
+bm.append(('regrid run', start, end))
 
 # Compute pointwise relative error
 relerr = np.sum(np.abs(dstfield.data - xctfield.data)/np.abs(xctfield.data))
@@ -190,15 +196,9 @@ num_nodes = xctfield.size
 # clean up timings
 timings = []
 titles = []
-for x, y in bm:
-    timings.append(x)
-    titles.append(y)
-
-timings = (np.array(timings[1:]) - np.array(timings[0:-1])).tolist()
-timings.pop(2)
-
-titles.pop(0)
-titles.pop(2)
+for x, y, z in bm:
+    titles.append(x)
+    timings.append(z-y)
 
 # handle the parallel case
 if esmpy.pet_count > 1:
@@ -209,14 +209,31 @@ if esmpy.pet_count > 1:
     comm = MPI.COMM_WORLD
     relerr = comm.reduce(relerr, op=MPI.SUM)
     num_nodes = comm.reduce(num_nodes, op=MPI.SUM)
-    timings = comm.reduce(timings, op=MPI.SUM)
+    timings = comm.reduce(timings, op=MPI.MAX)
 
 # Output results and verify error is reasonable
-if esmpy.local_pet == 0:
-    for x in range(len(titles)):
-        print str(titles[x])+", "+str(timings[x])
-    print "\nRegridding error = "+str(relerr/num_nodes)
+import os.path
+output_file = "performance_testing.out"
+header = "ESMPy Regrid Performance Testing"
+of_present = os.path.isfile(output_file)
 
+f = open('performance_testing.out', 'a')
+if esmpy.local_pet == 0:
+    if not of_present:
+        f.write(header+"\n\n")
+        f.write("grid 1\t"+grid1[0]+"\n")
+        f.write("grid 2\t"+grid2[0]+"\n\n")
+        f.write("processors\t")
+        for x in range(len(titles)):
+            f.write(str(titles[x])+"\t")
+        f.write("regrid method\t")
+        f.write("Regridding error\t")
+        f.write("\n")
+    f.write(str(esmpy.pet_count)+"\t")
+    for x in range(len(titles)):
+        f.write(str(timings[x])+"\t")
+    f.write(str(rm)+"\t"+str(relerr/num_nodes)+"\n")
+f.close()
 
 #plot(srclons, srclats, srcfield, dstlons, dstlats, dstfield)
 
