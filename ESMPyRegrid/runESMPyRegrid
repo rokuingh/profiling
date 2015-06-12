@@ -12,7 +12,7 @@
 
 
 module load python all-python-libs
-export PYTHONPATH="/glade/u/home/rokuingh/esmf/src/addon/ESMPy/src:$PYTHONPATH"
+export PYTHONPATH="/glade/u/home/rokuingh/ESMF700bs49/lib/python2.7/site-packages:$PYTHONPATH"
 
 # regrid method: BILINEAR=0, PATCH=1, CONSERVE=2, NEAREST_STOD=3, NEAREST_DTOS=4
 export REGRIDMETHOD=0
