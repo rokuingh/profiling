@@ -1,0 +1,10 @@
+#!/bin/bash
+#
+# submit ESMPy profiling jobs from 32-1028 procs
+#
+
+mpirun -np 2 MOAB_eval data/ll1deg_grid.esmf.nc data/ll20x20_grid.esmf.nc > MOAB_eval2.out
+mpirun -np 4 MOAB_eval data/ll1deg_grid.esmf.nc data/ll20x20_grid.esmf.nc > MOAB_eval4.out
+mpirun -np 8 MOAB_eval data/ll1deg_grid.esmf.nc data/ll20x20_grid.esmf.nc > MOAB_eval8.out
+
+#python parse_data.py

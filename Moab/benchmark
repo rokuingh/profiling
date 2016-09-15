@@ -1,0 +1,13 @@
+#!/bin/bash
+#
+# submit ESMPy profiling jobs from 32-1028 procs
+#
+
+sed 's/%np%/32/g' < MOAB_eval_run | bsub
+sed 's/%np%/64/g' < MOAB_eval_run | bsub
+sed 's/%np%/128/g' < MOAB_eval_run | bsub
+sed 's/%np%/256/g' < MOAB_eval_run | bsub
+sed 's/%np%/512/g' < MOAB_eval_run | bsub
+sed 's/%np%/1024/g' < MOAB_eval_run | bsub
+sed 's/%np%/2048/g' < MOAB_eval_run | bsub
+sed 's/%np%/4096/g' < MOAB_eval_run | bsub
