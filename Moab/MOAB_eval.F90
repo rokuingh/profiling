@@ -21,7 +21,7 @@ program MOAB_eval
   integer :: numargs
 
    ! Init ESMF 
-  call ESMF_Initialize(rc=localrc)
+  call ESMF_Initialize(rc=localrc, logappendflag=.false.)
   if (localrc /=ESMF_SUCCESS) then
      stop
   endif
@@ -83,7 +83,7 @@ program MOAB_eval
 
 
   ! Regridding using ESMF native Mesh
-  call time_mesh_regrid(srcfile, dstfile, rc=localrc)
+  call time_mesh_regrid(srcfile, dstfile, moab=.false., rc=localrc)
    if (localrc /=ESMF_SUCCESS) then
      write(*,*) "ERROR IN REGRIDDING SUBROUTINE!"
      stop
@@ -103,7 +103,7 @@ program MOAB_eval
   endif
 
   ! Regridding using MOAB Mesh
-  call time_mesh_regrid(srcfile, dstfile, rc=localrc)
+  call time_mesh_regrid(srcfile, dstfile, moab=.true., rc=localrc)
    if (localrc /=ESMF_SUCCESS) then
      write(*,*) "ERROR IN REGRIDDING SUBROUTINE!"
           stop
@@ -163,8 +163,9 @@ program MOAB_eval
 
 
 
- subroutine time_mesh_regrid(srcfile, dstfile,rc)
+ subroutine time_mesh_regrid(srcfile, dstfile, moab, rc)
   character(len=*) :: srcfile, dstfile
+  logical, intent(in) :: moab
   integer, intent(out)  :: rc
   integer :: localrc
   type(ESMF_Mesh) :: srcMesh
@@ -238,6 +239,7 @@ program MOAB_eval
      return
   endif
 
+  call ESMF_VMLogMemInfo("before src mesh create")
   call ESMF_VMBarrier(vm)
   call ESMF_VMWtime(beg_time)
 
@@ -252,6 +254,7 @@ program MOAB_eval
   endif
 
    call ESMF_VMWtime(end_time)
+   call ESMF_VMLogMemInfo("after src mesh create")
    call compute_max_avg_time(end_time-beg_time, &
         max_time, avg_time, rc=localrc)
    if (localrc /=ESMF_SUCCESS) then
@@ -259,7 +262,7 @@ program MOAB_eval
       return
    endif
    if (localPet .eq. 0) then  
-      write(*,*) "src mesh create time  =",max_time,avg_time
+      write(*,*) moab, " src mesh create time  =", max_time,avg_time
    endif
 
   ! Array spec for fields
@@ -340,6 +343,7 @@ program MOAB_eval
 
 
    !!!! Setup destination mesh !!!!
+  call ESMF_VMLogMemInfo("before dst mesh create")
   call ESMF_VMBarrier(vm)
   call ESMF_VMWtime(beg_time)
     dstMesh=ESMF_MeshCreate(filename=dstfile, &
@@ -352,6 +356,7 @@ program MOAB_eval
    endif
 
    call ESMF_VMWtime(end_time)
+   call ESMF_VMLogMemInfo("after dst mesh create")
    call compute_max_avg_time(end_time-beg_time, &
         max_time, avg_time, rc=localrc)
    if (localrc /=ESMF_SUCCESS) then
@@ -359,7 +364,7 @@ program MOAB_eval
       return
    endif
    if (localPet .eq. 0) then  
-      write(*,*) "dst mesh create time  =",max_time,avg_time
+      write(*,*) moab, " dst mesh create time  =", max_time,avg_time
    endif
 
 
@@ -467,6 +472,7 @@ program MOAB_eval
    
   !!! Regrid forward from the A grid to the B grid
   ! Regrid store
+  call ESMF_VMLogMemInfo("before regrid")
   call ESMF_VMBarrier(vm)
   call ESMF_VMWtime(beg_time)
   call ESMF_FieldRegridStore( &
@@ -490,6 +496,7 @@ program MOAB_eval
    endif
 
    call ESMF_VMWtime(end_time)
+   call ESMF_VMLogMemInfo("after regrid")
    call compute_max_avg_time(end_time-beg_time, &
         max_time, avg_time, rc=localrc)
    if (localrc /=ESMF_SUCCESS) then
@@ -497,7 +504,7 @@ program MOAB_eval
       return
    endif
    if (localPet .eq. 0) then  
-      write(*,*) "regrid store time     =",max_time,avg_time
+      write(*,*) moab, " regrid store time     =",max_time,avg_time
    endif
 
 
@@ -724,6 +731,7 @@ program MOAB_eval
      return
    endif
 
+  call ESMF_VMLogMemInfo("before src mesh destroy")
   call ESMF_VMBarrier(vm)
   call ESMF_VMWtime(beg_time)
 
@@ -735,6 +743,7 @@ program MOAB_eval
    endif
 
    call ESMF_VMWtime(end_time)
+   call ESMF_VMLogMemInfo("after src mesh destroy")
    call compute_max_avg_time(end_time-beg_time, &
         max_time, avg_time, rc=localrc)
    if (localrc /=ESMF_SUCCESS) then
@@ -742,7 +751,7 @@ program MOAB_eval
       return
    endif
    if (localPet .eq. 0) then  
-      write(*,*) "src mesh destroy time =",max_time,avg_time
+      write(*,*) moab, " src mesh destroy time =",max_time,avg_time
    endif
 
 
@@ -753,6 +762,7 @@ program MOAB_eval
 #endif
 
 
+  call ESMF_VMLogMemInfo("before dst mesh destroy")
   call ESMF_VMBarrier(vm)
   call ESMF_VMWtime(beg_time)
 
@@ -763,6 +773,7 @@ program MOAB_eval
    endif
 
    call ESMF_VMWtime(end_time)
+   call ESMF_VMLogMemInfo("after dst mesh destroy")
    call compute_max_avg_time(end_time-beg_time, &
         max_time, avg_time, rc=localrc)
    if (localrc /=ESMF_SUCCESS) then
@@ -770,7 +781,7 @@ program MOAB_eval
       return
    endif
    if (localPet .eq. 0) then  
-      write(*,*) "dst mesh destroy time =",max_time,avg_time
+      write(*,*) moab, " dst mesh destroy time =",max_time,avg_time
    endif
 
 #ifdef CHECK_ACCURACY
