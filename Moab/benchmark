@@ -3,32 +3,19 @@
 # submit ESMPy profiling jobs from 32-1028 procs
 #
 
-sed 's/%np%/1/g' < MOAB_eval_run data/ll1deg_grid.esmf.nc data/ll20x20_grid.esmf.nc | bsub
-python collect_mem_reports.py 1
-sed 's/%np%/2/g' < MOAB_eval_run data/ll1deg_grid.esmf.nc data/ll20x20_grid.esmf.nc | bsub
-python collect_mem_reports.py 2
-sed 's/%np%/4/g' < MOAB_eval_run data/ll1deg_grid.esmf.nc data/ll20x20_grid.esmf.nc | bsub
-python collect_mem_reports.py 4
-sed 's/%np%/8/g' < MOAB_eval_run data/ll1deg_grid.esmf.nc data/ll20x20_grid.esmf.nc | bsub
-# python collect_mem_reports.py 8
+sed 's/%np%/1/g' < MOAB_eval_run data/ll1deg_grid.esmf.nc data/ll20x20_grid.esmf.nc 1 | bsub
+sed 's/%np%/2/g' < MOAB_eval_run data/ll1deg_grid.esmf.nc data/ll20x20_grid.esmf.nc 2 | bsub
+sed 's/%np%/4/g' < MOAB_eval_run data/ll1deg_grid.esmf.nc data/ll20x20_grid.esmf.nc 4 | bsub
+sed 's/%np%/8/g' < MOAB_eval_run data/ll1deg_grid.esmf.nc data/ll20x20_grid.esmf.nc 8 | bsub
 # sed 's/%np%/16/g' < MOAB_eval_run data/ll1deg_grid.esmf.nc data/ll20x20_grid.esmf.nc | bsub
-# python collect_mem_reports.py 16
 # sed 's/%np%/32/g' < MOAB_eval_run data/ll1deg_grid.esmf.nc data/ll20x20_grid.esmf.nc | bsub
-# python collect_mem_reports.py 32
 # sed 's/%np%/64/g' < MOAB_eval_run data/ll1deg_grid.esmf.nc data/ll20x20_grid.esmf.nc| bsub
-# python collect_mem_reports.py 64
 # sed 's/%np%/128/g' < MOAB_eval_run data/ll1deg_grid.esmf.nc data/ll20x20_grid.esmf.nc| bsub
-# python collect_mem_reports.py 128
 # sed 's/%np%/256/g' < MOAB_eval_run data/ll1deg_grid.esmf.nc data/ll20x20_grid.esmf.nc| bsub
-# python collect_mem_reports.py 256
 # sed 's/%np%/512/g' < MOAB_eval_run data/ll1deg_grid.esmf.nc data/ll20x20_grid.esmf.nc| bsub
-# python collect_mem_reports.py 512
 # sed 's/%np%/1024/g' < MOAB_eval_run data/ll1deg_grid.esmf.nc data/ll20x20_grid.esmf.nc| bsub
-# python collect_mem_reports.py 1024
 # sed 's/%np%/2048/g' < MOAB_eval_run data/ll1deg_grid.esmf.nc data/ll20x20_grid.esmf.nc| bsub
-# python collect_mem_reports.py 2048
 # sed 's/%np%/4096/g' < MOAB_eval_run data/ll1deg_grid.esmf.nc data/ll20x20_grid.esmf.nc| bsub
-# python collect_mem_reports.py 4096
 
 # argument is how many runs of powers of two are above
-python parse_moab_eval.py 3
+# python parse_moab_eval.py 3

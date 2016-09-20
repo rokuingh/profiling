@@ -11,3 +11,4 @@
 #BSUB -N
 
 mpirun.lsf MOAB_eval $0 $1 || exit 1
+python collect_mem_reports.py $2
