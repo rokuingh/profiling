@@ -6,10 +6,10 @@
 #BSUB -W 00:05
 #BSUB -q regular
 #BSUB -n %np%
-#BSUB -R "span[ptile=4]"
+#BSUB -R "span[ptile=16]"
 #BSUB -o MOAB_eval%np%.out
 #BSUB -e MOAB_eval%np%.err
 #BSUB -N
 
-mpirun.lsf ./MOAB_eval data/ll1280x1280_grid.esmf.nc data/ll640x640_grid.esmf.nc
+mpirun.lsf ./MOAB_eval data/ll1280x1280_grid.esmf.nc data/tx0.1v2_nomask.esmf.nc
 python collect_mem_reports.py %np%

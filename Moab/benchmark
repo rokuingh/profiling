@@ -1,12 +1,12 @@
 #!/bin/bash
 #
-# submit ESMPy profiling jobs from 32-1028 procs
+# submit ESMPy profiling jobs from 16-4096 procs
 #
 
 #sed 's/%np%/1/g' < MOAB_eval_run | bsub -K
 #sed 's/%np%/2/g' < MOAB_eval_run | bsub -K
 #sed 's/%np%/4/g' < MOAB_eval_run | bsub -K
-sed 's/%np%/8/g' < MOAB_eval_run | bsub -K
+#sed 's/%np%/8/g' < MOAB_eval_run | bsub -K
 sed 's/%np%/16/g' < MOAB_eval_run | bsub -K
 sed 's/%np%/32/g' < MOAB_eval_run | bsub -K
 sed 's/%np%/64/g' < MOAB_eval_run | bsub -K
@@ -18,4 +18,4 @@ sed 's/%np%/2048/g' < MOAB_eval_run | bsub -K
 sed 's/%np%/4096/g' < MOAB_eval_run | bsub -K
 
 # argument is how many runs of powers of two are above
-python parse_moab_eval.py 3 13
+python parse_moab_eval.py 4 13
