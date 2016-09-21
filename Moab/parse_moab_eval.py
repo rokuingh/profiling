@@ -1,10 +1,12 @@
 import sys
 import numpy as np
 
-num_power = sys.argv[1]
-num_power = int(num_power)
+pow_start = sys.argv[1]
+pow_stop = sys.argv[2]
+pow_start = int(pow_start)
+pow_stop = int(pow_stop)
 
-procs = [2**x for x in range(num_power)]
+procs = [2**x for x in range(pow_start, pow_stop)]
 
 filename = "MOAB_eval"
 

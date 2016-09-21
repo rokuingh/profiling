@@ -56,4 +56,6 @@ MOAB_eval:
 clean:
 	rm -f MOAB_eval *.o *.mod
 distclean: clean
-	rm -f PET*.ESMF_LogFile *.out *.csv
+	rm -f PET*.ESMF_LogFile *.err *.out *.csv
+run:
+	./benchmark

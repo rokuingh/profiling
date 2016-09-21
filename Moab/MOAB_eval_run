@@ -1,5 +1,6 @@
 #!/bin/bash
 #
+#BSUB -a poe
 #BSUB -J MOAB_eval%np%
 #BSUB -P P35071400
 #BSUB -W 00:05
@@ -10,5 +11,5 @@
 #BSUB -e MOAB_eval%np%.err
 #BSUB -N
 
-mpirun.lsf MOAB_eval $0 $1 || exit 1
-python collect_mem_reports.py $2
+mpirun.lsf ./MOAB_eval data/ll1280x1280_grid.esmf.nc data/ll640x640_grid.esmf.nc
+python collect_mem_reports.py %np%
