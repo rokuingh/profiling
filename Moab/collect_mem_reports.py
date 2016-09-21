@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+import math
 
 num_procs = sys.argv[1]
 num_procs = int(num_procs)
@@ -8,7 +9,7 @@ mem_results = np.array([])
 num_val = 10
 
 for proc in procs:
-    logname = "PET"+str(proc)+".ESMF_LogFile"
+    logname = "PET"+(str(proc).zfill(int(math.ceil(math.log(num_procs,10)))))+".ESMF_LogFile"
     with open(logname) as f:
         for line in f:
             if "VmRSS" in line:
