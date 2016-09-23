@@ -3,7 +3,7 @@
 #BSUB -a poe
 #BSUB -J MOAB_eval%np%
 #BSUB -P P35071400
-#BSUB -W 00:05
+#BSUB -W 00:30
 #BSUB -q regular
 #BSUB -n %np%
 #BSUB -R "span[ptile=16]"
