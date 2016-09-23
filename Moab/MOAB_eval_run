@@ -11,5 +11,4 @@
 #BSUB -e MOAB_eval%np%.err
 #BSUB -N
 
-mpirun.lsf ./MOAB_eval data/ll1280x1280_grid.esmf.nc data/tx0.1v2_nomask.esmf.nc
-python collect_mem_reports.py %np%
+mpirun.lsf ./MOAB_eval %grid1% %grid2%

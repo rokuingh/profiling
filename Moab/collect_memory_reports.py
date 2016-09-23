@@ -1,16 +1,29 @@
-import sys
+import sys, os
 import numpy as np
 import math
 
-num_procs = sys.argv[1]
+num_procs  = sys.argv[1]
 num_procs = int(num_procs)
+
+out = None
+memoutfilename = "moab_memory_results.csv"
+if not os.path.isfile(memoutfilename):
+    out = open(memoutfilename,"w")
+    out.write("memory measured in Mb\n")
+    out.write("proc count\tsrc create hwm esmf\tsrc create rss esmf\tdst create hwm esmf\tdst create rss esmf\tregrid hwm esmf\tregrid rss esmf\tsrc destroy hwm esmf\tsrc destroy rss esmf\tdst destroy hwm esmf\tdst destroy rss esmf\tsrc create hwm moab\tsrc create rss moab\tdst create hwm moab\tdst create rss moab\tregrid hwm moab\tregrid rss moab\tsrc destroy hwm moab\tsrc destroy rss moab\tdst destroy hwm moab\tdst destroy rss moab\n")
+else:
+    out = open(memoutfilename,"a")
+
+
 procs = [x for x in range(num_procs)]
 mem_results = []
 num_val = 10
 num_measurements = 2
 
 for proc in procs:
-    logname = "PET"+(str(proc).zfill(int(math.ceil(math.log(num_procs,10)))))+".ESMF_LogFile"
+    logname = os.path.join(os.getcwd(), str(num_procs),
+        "PET"+(str(proc).zfill(int(math.ceil(math.log(num_procs,10)))))+
+        ".ESMF_LogFile")
     with open(logname) as f:
         for line in f:
             if "VmRSS" in line:
@@ -39,13 +52,10 @@ assert(mem_results3.shape == (num_procs*num_val, 2))
 mem_results4 = np.reshape(mem_results3, (num_procs,num_val,num_measurements))
 mem_results5 = np.sum(mem_results4, axis=0)
 
-out = open("moab_eval_results_mem.csv","a")
-if num_procs == 1:
-    out.write("memory, measured in Mb")
-    out.write("proc count\tsrc create hwm esmf\tsrc create rss esmf\tdst create hwm esmf\tdst create rss esmf\tregrid hwm esmf\tregrid rss esmf\tsrc destroy hwm esmf\tsrc destroy rss esmf\tdst destroy hwm esmf\tdst destroy rss esmf\tsrc create hwm moab\tsrc create rss moab\tdst create hwm moab\tdst create rss moab\tregrid hwm moab\tregrid rss moab\tsrc destroy hwm moab\tsrc destroy rss moab\tdst destroy hwm moab\tdst destroy rss moab\n")
 out.write(str(num_procs)+"\t")
 for mem_out in range(num_val):
     out.write(str(mem_results5[mem_out,0]/1000)+"\t")
     out.write(str(mem_results5[mem_out,1]/1000)+"\t")
 out.write("\n")
+
 out.close()

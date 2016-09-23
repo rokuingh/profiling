@@ -1,21 +1,28 @@
 #!/bin/bash
 #
-# submit ESMPy profiling jobs from 16-4096 procs
+# submit MOABvESMF profiling jobs from 16-4096 procs
 #
 
-#sed 's/%np%/1/g' < MOAB_eval_run | bsub -K
-#sed 's/%np%/2/g' < MOAB_eval_run | bsub -K
-#sed 's/%np%/4/g' < MOAB_eval_run | bsub -K
-#sed 's/%np%/8/g' < MOAB_eval_run | bsub -K
-sed 's/%np%/16/g' < MOAB_eval_run | bsub -K
-sed 's/%np%/32/g' < MOAB_eval_run | bsub -K
-sed 's/%np%/64/g' < MOAB_eval_run | bsub -K
-sed 's/%np%/128/g' < MOAB_eval_run | bsub -K
-sed 's/%np%/256/g' < MOAB_eval_run | bsub -K
-sed 's/%np%/512/g' < MOAB_eval_run | bsub -K
-sed 's/%np%/1024/g' < MOAB_eval_run | bsub -K
-sed 's/%np%/2048/g' < MOAB_eval_run | bsub -K
-sed 's/%np%/4096/g' < MOAB_eval_run | bsub -K
+# escape characters in datadir are required for sed later on
+DATADIR=$PWD"data\/"
+GRID1=$DATADIR"ll1280x1280_grid.esmf.nc"
+GRID2=$DATADIR"tx0.1v2_nomask.esmf.nc"
 
-# argument is how many runs of powers of two are above
-python parse_moab_eval.py 4 13
+# create rundir
+RUNDIR=$(python run_id.py 2>&1)
+mkdir $RUNDIR
+cd $RUNDIR
+
+bench_procs=(16 32 64 128 256 512 1024 2048 4096)
+
+for pnum in "${bench_procs[@]}"
+do
+  mkdir $pnum
+  sed "s/%np%/$pnum/g; s/%grid1%/$GRID1/g; s/%grid2%/$GRID2/g" MOAB_eval_run > $pnum/MOAB_eval_run
+  cp MOAB_eval "$pnum"
+  cd "$pnum"
+  #bsub -K MOAB_eval_run
+  cd ..
+  python ../../collect_timing_reports.py "$pnum"
+  python ../../collect_memory_reports.py "$pnum"
+done
