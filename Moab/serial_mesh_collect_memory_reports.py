@@ -45,7 +45,7 @@ mem_results3 = mem_results2[ind+1,:] - mem_results2[ind,:]
 assert(mem_results3.shape == (num_procs*num_val, 2))
 
 mem_results4 = np.reshape(mem_results3, (num_procs,num_val,num_measurements))
-mem_results5 = np.sum(mem_results4, axis=0)
+mem_results5 = np.max(mem_results4, axis=0)
 
 # out.write(str(num_procs)+"\t")
 for mem_out in range(num_val/2):
