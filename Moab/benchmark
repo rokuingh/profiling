@@ -7,6 +7,8 @@
 DATADIR=$PWD"/data/"
 GRID1=$DATADIR"ll1280x1280_grid.esmf.nc"
 GRID2=$DATADIR"tx0.1v2_nomask.esmf.nc"
+#GRID1=$DATADIR"ll10x10_grid.esmf.nc"
+#GRID2=$DATADIR"ll10x10_grid.esmf.nc"
 
 # create rundir
 RUNDIR=$(python run_id.py 2>&1)
@@ -14,6 +16,7 @@ mkdir $RUNDIR
 cd $RUNDIR
 
 bench_procs=(16 32 64 128 256 512 1024 2048 4096)
+#bench_procs=(16)
 
 for pnum in "${bench_procs[@]}"
 do

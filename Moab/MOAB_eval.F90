@@ -269,7 +269,7 @@ program MOAB_eval
   call ESMF_ArraySpecSet(arrayspec, 1, ESMF_TYPEKIND_R8, rc=rc)
 
   ! Create source field
-   srcField = ESMF_FieldCreate(srcMesh, arrayspec, meshloc=ESMF_MESHLOC_ELEMENT , &
+   srcField = ESMF_FieldCreate(srcMesh, arrayspec, meshloc=ESMF_MESHLOC_NODE, &
                         name="source", rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
     rc=ESMF_FAILURE
@@ -373,7 +373,7 @@ program MOAB_eval
    
    
    ! Create dest. field
-   dstField = ESMF_FieldCreate(dstMesh, arrayspec, meshloc=ESMF_MESHLOC_ELEMENT, &
+   dstField = ESMF_FieldCreate(dstMesh, arrayspec, meshloc=ESMF_MESHLOC_NODE, &
         name="dest", rc=localrc)
    if (localrc /=ESMF_SUCCESS) then
       rc=ESMF_FAILURE
@@ -398,7 +398,7 @@ program MOAB_eval
    
 
     ! Create exact dest. field
-   xdstField = ESMF_FieldCreate(dstMesh, arrayspec, meshloc=ESMF_MESHLOC_ELEMENT, &
+   xdstField = ESMF_FieldCreate(dstMesh, arrayspec, meshloc=ESMF_MESHLOC_NODE, &
         name="xdest", rc=localrc)
    if (localrc /=ESMF_SUCCESS) then
       rc=ESMF_FAILURE
@@ -484,7 +484,7 @@ program MOAB_eval
           factorList=weights, &
           factorIndexList=indices, &
 #endif
-          regridmethod=ESMF_REGRIDMETHOD_CONSERVE, &
+          regridmethod=ESMF_REGRIDMETHOD_BILINEAR, &
 ! COMMENT THESE OUT UNTIL THAT PART IS WORKING
 !          dstFracField=dstFracField, &
 !          srcFracField=srcFracField, &
