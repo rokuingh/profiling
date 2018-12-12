@@ -214,9 +214,6 @@ program MOAB_eval
   real(ESMF_KIND_R8) :: theta, phi
   real(ESMF_KIND_R8) :: lat, lon
 
-  integer(ESMF_KIND_I4), pointer:: indices(:,:)
-  real(ESMF_KIND_R8), pointer :: weights(:)
-
   ! result code
   integer :: finalrc
 
@@ -472,24 +469,42 @@ program MOAB_eval
    
   !!! Regrid forward from the A grid to the B grid
   ! Regrid store
-  call ESMF_VMLogMemInfo("before regrid")
+  call ESMF_VMLogMemInfo("before regrid store")
   call ESMF_VMBarrier(vm)
   call ESMF_VMWtime(beg_time)
   call ESMF_FieldRegridStore( &
           srcField, &
           dstField=dstField, &
-#ifdef CHECK_ACCURACY
           routeHandle=routeHandle, &
-#else
-          factorList=weights, &
-          factorIndexList=indices, &
-#endif
           regridmethod=ESMF_REGRIDMETHOD_BILINEAR, &
 ! COMMENT THESE OUT UNTIL THAT PART IS WORKING
 !          dstFracField=dstFracField, &
 !          srcFracField=srcFracField, &
           unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, &
           rc=localrc)
+  if (localrc /=ESMF_SUCCESS) then
+      rc=ESMF_FAILURE
+      return
+   endif
+
+   call ESMF_VMWtime(end_time)
+   call ESMF_VMLogMemInfo("after regrid store")
+   call compute_max_avg_time(end_time-beg_time, &
+        max_time, avg_time, rc=localrc)
+   if (localrc /=ESMF_SUCCESS) then
+      rc=ESMF_FAILURE
+      return
+   endif
+   if (localPet .eq. 0) then  
+      write(*,*) moab, " regrid store time     =",max_time,avg_time
+   endif
+
+  call ESMF_VMLogMemInfo("before regrid")
+  call ESMF_VMBarrier(vm)
+  call ESMF_VMWtime(beg_time)
+
+  ! Do regrid
+  call ESMF_FieldRegrid(srcField, dstField, routeHandle, rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
       rc=ESMF_FAILURE
       return
@@ -504,24 +519,13 @@ program MOAB_eval
       return
    endif
    if (localPet .eq. 0) then  
-      write(*,*) moab, " regrid store time     =",max_time,avg_time
+      write(*,*) moab, " regrid application time     =",max_time,avg_time
    endif
 
+  call ESMF_VMLogMemInfo("before regrid release")
+  call ESMF_VMBarrier(vm)
+  call ESMF_VMWtime(beg_time)
 
-#ifndef CHECK_ACCURACY
-  ! Get rid of weight lists
-  deallocate(weights)
-  deallocate(indices)
-#endif
-
-
-#ifdef CHECK_ACCURACY
-  ! Do regrid
-  call ESMF_FieldRegrid(srcField, dstField, routeHandle, rc=localrc)
-  if (localrc /=ESMF_SUCCESS) then
-      rc=ESMF_FAILURE
-      return
-   endif
 
   call ESMF_FieldRegridRelease(routeHandle, rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
@@ -529,6 +533,21 @@ program MOAB_eval
       return
     endif
 
+   call ESMF_VMWtime(end_time)
+   call ESMF_VMLogMemInfo("after regrid")
+   call compute_max_avg_time(end_time-beg_time, &
+        max_time, avg_time, rc=localrc)
+   if (localrc /=ESMF_SUCCESS) then
+      rc=ESMF_FAILURE
+      return
+   endif
+   if (localPet .eq. 0) then  
+      write(*,*) moab, " regrid release time     =",max_time,avg_time
+   endif
+
+
+
+#ifdef CHECK_ACCURACY
 
   ! Get the integration weights
   call ESMF_FieldRegridGetArea(srcAreaField, &
