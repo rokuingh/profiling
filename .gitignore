@@ -7,5 +7,6 @@ ESMF_LogFile
 PET*.ESMF_Logfile
 *.stdout
 *.out
+*.err
 *.csv
 /log*
