@@ -10,7 +10,7 @@ memoutfilename = "moab_memory_results.csv"
 if not os.path.isfile(memoutfilename):
     out = open(memoutfilename,"w")
     out.write("memory measured in Mb\n")
-    out.write("proc count\tsrc create hwm esmf\tsrc create rss esmf\tdst create hwm esmf\tdst create rss esmf\tregrid hwm esmf\tregrid rss esmf\tsrc destroy hwm esmf\tsrc destroy rss esmf\tdst destroy hwm esmf\tdst destroy rss esmf\tsrc create hwm moab\tsrc create rss moab\tdst create hwm moab\tdst create rss moab\tregrid hwm moab\tregrid rss moab\tsrc destroy hwm moab\tsrc destroy rss moab\tdst destroy hwm moab\tdst destroy rss moab\n")
+    out.write("proc count\tsrc create hwm esmf\tsrc create rss esmf\tdst create hwm esmf\tdst create rss esmf\tregrid store hwm esmf\tregrid store rss esmf\tregrid hwm esmf\tregrid rss esmf\tregrid release hwm esmf\tregrid release rss esmf\tsrc destroy hwm esmf\tsrc destroy rss esmf\tdst destroy hwm esmf\tdst destroy rss esmf\tsrc create hwm moab\tsrc create rss moab\tdst create hwm moab\tdst create rss moab\tregrid hwm moab\tregrid rss moab\tsrc destroy hwm moab\tsrc destroy rss moab\tdst destroy hwm moab\tdst destroy rss moab\n")
 else:
     out = open(memoutfilename,"a")
 

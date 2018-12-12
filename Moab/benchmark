@@ -26,7 +26,11 @@ do
   cp ../../MOAB_eval "$pnum"
   cd "$pnum"
   qsub MOAB_eval_run_pbs
-  # cd ..
-  # python ../../collect_timing_reports.py "$pnum"
-  # python ../../collect_memory_reports.py "$pnum"
 done
+
+# cd $RUNDIR
+# for pnum in "${bench_procs[@]}"
+# do
+#   python ../../collect_timing_reports.py "$pnum"
+#   python ../../collect_memory_reports.py "$pnum"
+# done
