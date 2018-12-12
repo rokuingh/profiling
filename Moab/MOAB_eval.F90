@@ -290,7 +290,7 @@ program MOAB_eval
   endif
 
 
-#define CHECK_ACCURACY
+! #define CHECK_ACCURACY
 #ifdef CHECK_ACCURACY
   ! Get Information about src coords
   call ESMF_MeshGet(srcMesh, numOwnedElements=srcNumOwnedElems, &
