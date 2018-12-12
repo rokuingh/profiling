@@ -11,7 +11,7 @@ timeoutfilename = "moab_timing_results.csv"
 if not os.path.isfile(timeoutfilename):
     out = open(timeoutfilename,"w")
     out.write("timing measured in seconds\n")
-    out.write("proc count\tsrc create esmf\tdst create esmf\tregrid store esmf\tregrid esmf\tregrid release esmf\tsrc destroy esmf\tdst destroy esmf\tsrc create moab\tdst create moab\tregrid moab\tsrc destroy moab\tdst destroy moab\n")
+    out.write("proc count\tsrc create esmf\tdst create esmf\tregrid store esmf\tregrid esmf\tregrid release esmf\tsrc destroy esmf\tdst destroy esmf\tsrc create moab\tdst create moab\tregrid store moab\tregrid moab\tregrid release moab\tsrc destroy moab\tdst destroy moab\n")
 else:
     out = open(timeoutfilename,"a")
 
