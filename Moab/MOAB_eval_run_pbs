@@ -10,5 +10,5 @@
 #PBS -o MOAB_eval%np%.out
 #PBS -e MOAB_eval%np%.err
 
-mpirun.lsf ./MOAB_eval %grid1% %grid2%
+mpirun ./MOAB_eval %grid1% %grid2%
 

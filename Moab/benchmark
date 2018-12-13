@@ -16,10 +16,11 @@ mkdir $RUNDIR
 cd $RUNDIR
 
 bench_procs=(36 72 144 288 576 1152 2304 4608)
-bench_procs=(36)
+# bench_procs=(36)
 
 for pnum in "${bench_procs[@]}"
 do
+  cd $RUNDIR
   mkdir $pnum
   nnum=$(( $pnum/36 ))
   sed "s&%np%&$pnum&g; s&%nn%&$nnum&g; s&%grid1%&$GRID1&g; s&%grid2%&$GRID2&g" ../../MOAB_eval_run_pbs > $pnum/MOAB_eval_run_pbs
