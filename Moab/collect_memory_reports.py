@@ -17,7 +17,7 @@ else:
 
 procs = [x for x in range(num_procs)]
 mem_results = []
-num_val = 10
+num_val = 14
 num_measurements = 2
 
 for proc in procs:
@@ -35,6 +35,8 @@ for proc in procs:
 
 # parse out the memory results
 mem_results = np.array(mem_results)
+print len(mem_results)
+print 2*num_procs*num_val*num_measurements
 assert(len(mem_results) == (2*num_procs*num_val*num_measurements))
 
 # separate rss and hwm numbers into columns, hwm first

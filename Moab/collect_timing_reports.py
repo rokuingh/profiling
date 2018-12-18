@@ -15,7 +15,7 @@ if not os.path.isfile(timeoutfilename):
 else:
     out = open(timeoutfilename,"a")
 
-out.write(str(num_procs)+", ")
+out.write(str(num_procs)+"\t")
 with open(resfilename) as f:
     for line in f:
         if "time" in line:

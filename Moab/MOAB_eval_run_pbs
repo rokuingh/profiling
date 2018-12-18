@@ -6,7 +6,7 @@
 #PBS -q economy
 #PBS -l select=%nn%:ncpus=36:mpiprocs=36
 #PBS -j oe
-#PBS -m abe
+#PBS -m ae
 #PBS -o MOAB_eval%np%.out
 #PBS -e MOAB_eval%np%.err
 

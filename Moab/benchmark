@@ -15,8 +15,8 @@ RUNDIR=$(python run_id.py 2>&1)
 mkdir $RUNDIR
 cd $RUNDIR
 
-bench_procs=(36 72 144 288 576 1152 2304 4608)
-# bench_procs=(36)
+#bench_procs=(36 72 144 288 576 1152 2304 4608)
+bench_procs=(4572)
 
 for pnum in "${bench_procs[@]}"
 do
