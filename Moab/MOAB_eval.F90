@@ -205,11 +205,11 @@ program MOAB_eval
   integer :: numElemConn
   real(ESMF_KIND_R8) :: beg_time, end_time
   real(ESMF_KIND_R8) :: max_time, avg_time
-  real(ESMF_KIND_R8), pointer :: srcOwnedElemCoords(:)
-  integer :: srcNumOwnedElems
+  real(ESMF_KIND_R8), pointer :: srcOwnedCoords(:)
+  integer :: srcNumOwned
   integer :: srcSpatialDim
-  real(ESMF_KIND_R8), pointer :: dstOwnedElemCoords(:)
-  integer :: dstNumOwnedElems
+  real(ESMF_KIND_R8), pointer :: dstOwnedCoords(:)
+  integer :: dstNumOwned
   integer :: dstSpatialDim
   integer :: cInd
 
@@ -306,19 +306,29 @@ program MOAB_eval
 
 #ifdef CHECK_ACCURACY
   ! Get Information about src coords
-  call ESMF_MeshGet(srcMesh, numOwnedElements=srcNumOwnedElems, &
+#ifdef CONSERVE
+  call ESMF_MeshGet(srcMesh, numOwnedElements=srcNumOwned, &
                     spatialDim=srcSpatialDim, rc=localrc)
+#else
+  call ESMF_MeshGet(srcMesh, numOwnedNodes=srcNumOwned, &
+                    spatialDim=srcSpatialDim, rc=localrc)
+#endif
   if (localrc /=ESMF_SUCCESS) then
     rc=ESMF_FAILURE
     return
    endif
 
   ! Allocate array to hold src coords
-  allocate(srcOwnedElemCoords(srcSpatialDim*srcNumOwnedElems))
+  allocate(srcOwnedCoords(srcSpatialDim*srcNumOwned))
 
   ! Get src coords
-  call ESMF_MeshGet(srcMesh, ownedElemCoords=srcOwnedElemCoords, &
+#ifdef CONSERVE
+  call ESMF_MeshGet(srcMesh, ownedElemCoords=srcOwnedCoords, &
                     rc=localrc)
+#else
+  call ESMF_MeshGet(srcMesh, ownedNodeCoords=srcOwnedCoords, &
+                    rc=localrc)
+#endif
   if (localrc /=ESMF_SUCCESS) then
     rc=ESMF_FAILURE
     return
@@ -337,8 +347,8 @@ program MOAB_eval
 
     ! Get coords
     cInd=srcSpatialDim*(i1-clbnd(1))+1
-    lon=srcOwnedElemCoords(cInd)
-    lat=srcOwnedElemCoords(cInd+1)
+    lon=srcOwnedCoords(cInd)
+    lat=srcOwnedCoords(cInd+1)
 
     ! Set the source to be a function of the coordinates
     theta = DEG2RAD*(lon)
@@ -431,18 +441,27 @@ program MOAB_eval
 
 #ifdef CHECK_ACCURACY
   ! Get Information about dst coords
-  call ESMF_MeshGet(dstMesh, numOwnedElements=dstNumOwnedElems, &
+#ifdef CONSERVE
+  call ESMF_MeshGet(dstMesh, numOwnedElements=dstNumOwned, &
                     spatialDim=dstSpatialDim, rc=localrc)
+#else
+  call ESMF_MeshGet(dstMesh, numOwnedNodes=dstNumOwned, &
+                    spatialDim=dstSpatialDim, rc=localrc)
+#endif
   if (localrc /=ESMF_SUCCESS) then
     rc=ESMF_FAILURE
     return
   endif
 
   ! Allocate array to hold dst coords
-  allocate(dstOwnedElemCoords(dstSpatialDim*dstNumOwnedElems))
+  allocate(dstOwnedCoords(dstSpatialDim*dstNumOwned))
 
   ! Get dst coords
-  call ESMF_MeshGet(dstMesh, ownedElemCoords=dstOwnedElemCoords, rc=localrc)
+#ifdef CONSERVE
+  call ESMF_MeshGet(dstMesh, ownedElemCoords=dstOwnedCoords, rc=localrc)
+#else
+  call ESMF_MeshGet(dstMesh, ownedNodeCoords=dstOwnedCoords, rc=localrc)
+#endif
   if (localrc /=ESMF_SUCCESS) then
     rc=ESMF_FAILURE
     return
@@ -471,8 +490,8 @@ program MOAB_eval
 
     ! Get coords
     cInd=dstSpatialDim*(i1-clbnd(1))+1
-    lon=dstOwnedElemCoords(cInd)
-    lat=dstOwnedElemCoords(cInd+1)
+    lon=dstOwnedCoords(cInd)
+    lat=dstOwnedCoords(cInd+1)
 
     ! Set the source to be a function of the coordinates
     theta = DEG2RAD*(lon)
@@ -571,6 +590,7 @@ program MOAB_eval
 
 #ifdef CHECK_ACCURACY
 
+#ifdef CONSERVE
   ! Get the integration weights
   call ESMF_FieldRegridGetArea(srcAreaField, rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
@@ -585,7 +605,7 @@ program MOAB_eval
     rc=ESMF_FAILURE
     return
   endif
-
+#endif
 
   ! Check if the values are close
   minerror(1) = 100000.
@@ -609,7 +629,7 @@ program MOAB_eval
     return
   endif
 
-
+#ifdef CONSERVE
   ! get dst area Field
   call ESMF_FieldGet(dstAreaField, 0, dstAreaPtr, rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
@@ -626,11 +646,13 @@ program MOAB_eval
     return
   endif
 #endif
+#endif
 
   ! destination grid
   !! check relative error
   do i1=clbnd(1),cubnd(1)
 
+#ifdef CONSERVE
     ! This is WRONG, shouldn't include Frac
     ! dstmass = dstmass + dstFracptr(i1,i2)*dstAreaptr(i1)*fptr(i1)
 
@@ -643,6 +665,7 @@ program MOAB_eval
     !if (dstFracptr(i1) .lt. 0.999) cycle
 
     ! write(*,*) i1,"::",dstFarrayPtr(i1),xdstFarrayPtr(i1)
+#endif
 
     if (xdstFarrayPtr(i1) .ne. 0.0) then
       error=ABS(dstFarrayPtr(i1) - xdstFarrayPtr(i1))/ABS(xdstFarrayPtr(i1))
@@ -676,6 +699,7 @@ program MOAB_eval
     return
   endif
 
+#ifdef CONSERVE
   ! get src Field
   call ESMF_FieldGet(srcAreaField, 0, srcAreaptr, rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
@@ -712,6 +736,7 @@ program MOAB_eval
     rc=ESMF_FAILURE
     return
   endif
+#endif
 
   call ESMF_VMAllReduce(vm, maxerror, maxerrorg, 1, ESMF_REDUCE_MAX, rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
@@ -786,8 +811,7 @@ program MOAB_eval
 
   call ESMF_VMWtime(end_time)
   call ESMF_VMLogMemInfo("after src mesh destroy")
-  call compute_max_avg_time(end_time-beg_time, &
-        max_time, avg_time, rc=localrc)
+  call compute_max_avg_time(end_time-beg_time, max_time, avg_time, rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
     rc=ESMF_FAILURE
     return
@@ -799,8 +823,8 @@ program MOAB_eval
 
 #ifdef CHECK_ACCURACY
   ! DeAllocate coordinate arrays
-  deallocate(srcOwnedElemCoords)
-  deallocate(dstOwnedElemCoords)
+  deallocate(srcOwnedCoords)
+  deallocate(dstOwnedCoords)
 #endif
 
 
@@ -829,8 +853,10 @@ program MOAB_eval
   ! Output Accuracy results
   if (localPet == 0) then
     write(*,*)
-    write(*,*) "conserv. rel. error     = ", ABS(dstmassg(1)-srcmassg(1))/srcmassg(1)
     write(*,*) "interp. max. rel. error = ", maxerrorg(1)
+#ifdef CONSERVE
+    write(*,*) "conserv. rel. error     = ", ABS(dstmassg(1)-srcmassg(1))/srcmassg(1)
+#endif
     !write(*,*) "SRC mass = ", srcmassg(1)
     !write(*,*) "DST mass = ", dstmassg(1)
     !write(*,*) "Min Error = ", minerrorg(1)

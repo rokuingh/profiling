@@ -10,4 +10,4 @@
 #PBS -o mesh_serial_mem.out
 #PBS -e mesh_serial_mem.err
 
-mpirun ./mesh_serial_mem
+mpiexec.hydra ./mesh_serial_mem
