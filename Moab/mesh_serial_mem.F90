@@ -24,7 +24,7 @@ program MOAB_eval
   real(ESMF_KIND_R8) :: max_time, avg_time
   integer :: i
 
-   ! Init ESMF 
+   ! Init ESMF
   call ESMF_Initialize(rc=localrc, logappendflag=.false.)
   if (localrc /=ESMF_SUCCESS) stop
 
@@ -46,19 +46,19 @@ program MOAB_eval
 
   ! Write out number of PETS
   if (localPet .eq. 0) then
-     write(*,*) "timings of mesh create for grids of increasing size"
-     write(*,*) ""
+    write(*,*) "timings of mesh create for grids of increasing size"
+    write(*,*) ""
   endif
 
   !!!!!!!!!!!!!!! Time Native Mesh !!!!!!!!!!!!
   write(*,*) "ESMF MESH"
   do i=1,8
-      write(*,*) trim(files(i))
+    write(*,*) trim(files(i))
   enddo
   write (*,*)
 
   ! Make sure  MOAB is off
-    call ESMF_MeshSetMOAB(.false., rc=localrc)
+  call ESMF_MeshSetMOAB(.false., rc=localrc)
   if (localrc .ne. ESMF_SUCCESS) stop
 
 
@@ -78,6 +78,9 @@ program MOAB_eval
     call ESMF_VMLogMemInfo("after mesh create")
     if (localrc /=ESMF_SUCCESS) stop
     write(*,*) end_time - beg_time
+
+    call ESMF_MeshDestroy(mesh, rc=localrc)
+    if (localrc /=ESMF_SUCCESS) stop
 
   enddo
 
@@ -113,11 +116,14 @@ program MOAB_eval
 
     write(*,*) end_time - beg_time
 
+    call ESMF_MeshDestroy(mesh, rc=localrc)
+    if (localrc /=ESMF_SUCCESS) stop
+
   enddo
 
   write (*,*)
 
-  ! Finalize ESMF 
+  ! Finalize ESMF
   call ESMF_Finalize(rc=localrc)
   if (localrc /=ESMF_SUCCESS) stop
 
