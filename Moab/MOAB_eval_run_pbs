@@ -10,5 +10,5 @@
 #PBS -o MOAB_eval%np%.out
 #PBS -e MOAB_eval%np%.err
 
-mpirun ./MOAB_eval %grid1% %grid2%
+mpiexec.hydra ./MOAB_eval %grid1% %grid2%
 

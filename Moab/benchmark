@@ -15,8 +15,9 @@ RUNDIR=$(python run_id.py 2>&1)
 mkdir $RUNDIR
 cd $RUNDIR
 
-#bench_procs=(36 72 144 288 576 1152 2304 4608)
-bench_procs=(4572)
+# would be nice to use 4608 as the high end, but cheyenne bails every time, 4572 doesn't always work either..
+bench_procs=(36 72 144 288 576 1152 2304 4572)
+#bench_procs=(4608)
 
 for pnum in "${bench_procs[@]}"
 do
