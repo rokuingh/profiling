@@ -9,8 +9,8 @@
 ! Licensed under the University of Illinois-NCSA License.
 !
 
-! #define CHECK_ACCURACY
-! #define CONSERVE
+#define CHECK_ACCURACY
+!#define CONSERVE
 
 
 program MOAB_eval
