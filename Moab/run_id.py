@@ -1,6 +1,8 @@
 import os, sys, re
 
-rundir = os.path.join(os.getcwd(), "runs")
+ROOTDIR = "/glade/work/rokuingh/MOABperformance"
+
+rundir = os.path.join(ROOTDIR, "runs")
 
 if not os.path.isdir(rundir):
     try:

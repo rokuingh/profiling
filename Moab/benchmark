@@ -4,6 +4,9 @@
 #
 
 # escape characters in datadir are required for sed later on
+ROOTDIR="/glade/work/rokuingh/MOABperformance"
+EXDIR="/glade/u/home/rokuingh/benchmarks/Moab"
+
 DATADIR=$PWD"/data/"
 GRID1=$DATADIR"ll1280x1280_grid.esmf.nc"
 GRID2=$DATADIR"tx0.1v2_nomask.esmf.nc"
@@ -17,8 +20,8 @@ cd $RUNDIR
 
 # would be nice to use 4608 as the high end, but cheyenne bails every time, 4572 doesn't always work either..
 bench_procs=(36 72 144 288 576 1152 2304 4572)
-bench_procs=(36 72 144 288 576 1152) 
-bench_procs=(36) 
+bench_procs=(36 72 144 288 576 1152)
+bench_procs=(36)
 #bench_procs=(4608)
 
 for pnum in "${bench_procs[@]}"
@@ -26,8 +29,8 @@ do
   cd $RUNDIR
   mkdir $pnum
   nnum=$(( $pnum/36 ))
-  sed "s&%np%&$pnum&g; s&%nn%&$nnum&g; s&%grid1%&$GRID1&g; s&%grid2%&$GRID2&g" ../../MOAB_eval_run_pbs > $pnum/MOAB_eval_run_pbs
-  cp ../../MOAB_eval "$pnum"
+  sed "s&%np%&$pnum&g; s&%nn%&$nnum&g; s&%grid1%&$GRID1&g; s&%grid2%&$GRID2&g" $EXDIR/MOAB_eval_run_pbs > $pnum/MOAB_eval_run_pbs
+  cp $EXDIR/MOAB_eval "$pnum"
   cd "$pnum"
   qsub MOAB_eval_run_pbs
 done
