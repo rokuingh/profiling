@@ -9,7 +9,7 @@
 ! Licensed under the University of Illinois-NCSA License.
 !
 
-#define CHECK_ACCURACY
+!#define CHECK_ACCURACY
 !#define CONSERVE
 
 
