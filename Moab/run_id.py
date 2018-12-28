@@ -1,6 +1,6 @@
 import os, sys, re
 
-ROOTDIR = "/glade/work/rokuingh/MOABperformance"
+ROOTDIR  = sys.argv[1]
 
 rundir = os.path.join(ROOTDIR, "runs")
 
@@ -18,4 +18,4 @@ for path in os.listdir(rundir):
         head, tail = os.path.split(directory)
         dirnums.append(int(tail))
 
-print os.path.join(rundir, str(max(dirnums or [0]) + 1))
+print (os.path.join(rundir, str(max(dirnums or [0]) + 1)))

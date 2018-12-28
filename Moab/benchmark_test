@@ -4,7 +4,10 @@
 # this is small scale test script that bypasses the batch submission
 #
 
-RUNDIR=$(python run_id.py 2>&1)
+ROOTDIR="/Users/ryan/sandbox/benchmarks/Moab"
+EXDIR="/Users/ryan/sandbox/benchmarks/Moab"
+
+RUNDIR=$(python run_id.py $ROOTDIR 2>&1)
 mkdir $RUNDIR
 cd $RUNDIR
 
@@ -12,10 +15,11 @@ bench_procs=(1 2 4)
 
 for pnum in "${bench_procs[@]}"
 do
+  cd $RUNDIR
   mkdir "$pnum"
   cd "$pnum"
-  mpirun -np "$pnum" ../../../MOAB_eval ../../../data/ll1deg_grid.esmf.nc ../../../data/ll20x20_grid.esmf.nc > MOAB_eval"$pnum".out
+  mpirun -np "$pnum" $EXDIR/MOAB_eval $EXDIR/data/ll1deg_grid.esmf.nc $EXDIR/data/ll20x20_grid.esmf.nc > MOAB_eval"$pnum".out
   cd ../
-  python ../../collect_timing_reports.py "$pnum"
-  python ../../collect_memory_reports.py "$pnum"
+  python $EXDIR/collect_timing_reports.py "$pnum"
+  python $EXDIR/collect_memory_reports.py "$pnum"
 done

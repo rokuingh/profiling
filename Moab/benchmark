@@ -6,7 +6,6 @@
 # escape characters in datadir are required for sed later on
 ROOTDIR="/glade/work/rokuingh/MOABperformance"
 EXDIR="/glade/u/home/rokuingh/benchmarks/Moab"
-
 DATADIR=$PWD"/data/"
 GRID1=$DATADIR"ll1280x1280_grid.esmf.nc"
 GRID2=$DATADIR"tx0.1v2_nomask.esmf.nc"
@@ -14,7 +13,7 @@ GRID2=$DATADIR"tx0.1v2_nomask.esmf.nc"
 #GRID2=$DATADIR"ll10x10_grid.esmf.nc"
 
 # create rundir
-RUNDIR=$(python run_id.py 2>&1)
+RUNDIR=$(python run_id.py $ROOTDIR 2>&1)
 mkdir $RUNDIR
 cd $RUNDIR
 
@@ -25,10 +24,10 @@ for pnum in "${bench_procs[@]}"
 do
   cd $RUNDIR
   mkdir $pnum
+  cd "$pnum"
   nnum=$(( $pnum/36 ))
   sed "s&%np%&$pnum&g; s&%nn%&$nnum&g; s&%grid1%&$GRID1&g; s&%grid2%&$GRID2&g" $EXDIR/MOAB_eval_run_pbs > $pnum/MOAB_eval_run_pbs
   cp $EXDIR/MOAB_eval "$pnum"
-  cd "$pnum"
   qsub MOAB_eval_run_pbs
 done
 

@@ -35,8 +35,8 @@ for proc in procs:
 
 # parse out the memory results
 mem_results = np.array(mem_results)
-print len(mem_results)
-print 2*num_procs*num_val*num_measurements
+# print (len(mem_results))
+# print (2*num_procs*num_val*num_measurements)
 assert(len(mem_results) == (2*num_procs*num_val*num_measurements))
 
 # separate rss and hwm numbers into columns, hwm first
