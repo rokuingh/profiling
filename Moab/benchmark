@@ -18,7 +18,7 @@ mkdir $RUNDIR
 cd $RUNDIR
 
 bench_procs=(36 72 144 288 576 1152 2304 4608)
-bench_procs=(4608)
+bench_procs=(36)
 
 for pnum in "${bench_procs[@]}"
 do
@@ -26,8 +26,8 @@ do
   mkdir $pnum
   cd "$pnum"
   nnum=$(( $pnum/36 ))
-  sed "s&%np%&$pnum&g; s&%nn%&$nnum&g; s&%grid1%&$GRID1&g; s&%grid2%&$GRID2&g" $EXDIR/MOAB_eval_run_pbs > $pnum/MOAB_eval_run_pbs
-  cp $EXDIR/MOAB_eval "$pnum"
+  sed "s&%np%&$pnum&g; s&%nn%&$nnum&g; s&%grid1%&$GRID1&g; s&%grid2%&$GRID2&g; s&%esmf_lib%&$ESMF_LIB&g" $EXDIR/MOAB_eval_run_pbs > MOAB_eval_run_pbs
+  cp $EXDIR/MOAB_eval .
   qsub MOAB_eval_run_pbs
 done
 
