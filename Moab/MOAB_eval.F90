@@ -266,7 +266,6 @@ program MOAB_eval
   ! Array spec for fields
   call ESMF_ArraySpecSet(arrayspec, 1, ESMF_TYPEKIND_R8, rc=rc)
 
-#ifdef CONSERVE
   ! Create source field
   srcField = ESMF_FieldCreate(srcMesh, arrayspec, meshloc=ESMF_MESHLOC_ELEMENT, &
                               name="source", rc=localrc)
@@ -275,6 +274,7 @@ program MOAB_eval
     return
   endif
 
+#ifdef CONSERVE
   ! Create source area field
   srcAreaField = ESMF_FieldCreate(srcMesh, arrayspec, meshloc=ESMF_MESHLOC_ELEMENT, &
                                   name="source_area", rc=localrc)
@@ -291,14 +291,14 @@ program MOAB_eval
     return
   endif
 
-#else
-  ! Create source field
-  srcField = ESMF_FieldCreate(srcMesh, arrayspec, meshloc=ESMF_MESHLOC_NODE, &
-                              name="source", rc=localrc)
-  if (localrc /=ESMF_SUCCESS) then
-    rc=ESMF_FAILURE
-    return
-  endif
+! #else
+!   ! Create source field
+!   srcField = ESMF_FieldCreate(srcMesh, arrayspec, meshloc=ESMF_MESHLOC_NODE, &
+!                               name="source", rc=localrc)
+!   if (localrc /=ESMF_SUCCESS) then
+!     rc=ESMF_FAILURE
+!     return
+!   endif
 #endif
 
 
@@ -377,7 +377,6 @@ program MOAB_eval
   ! Array spec
   call ESMF_ArraySpecSet(arrayspec, 1, ESMF_TYPEKIND_R8, rc=rc)
 
-#ifdef CONSERVE
   ! Create dest. field
   dstField = ESMF_FieldCreate(dstMesh, arrayspec, meshloc=ESMF_MESHLOC_ELEMENT, &
                               name="dest", rc=localrc)
@@ -386,6 +385,7 @@ program MOAB_eval
     return
   endif
 
+#ifdef CONSERVE
   ! Create dest. area field
   dstAreaField = ESMF_FieldCreate(dstMesh, arrayspec, meshloc=ESMF_MESHLOC_ELEMENT, &
                                   name="dest_area", rc=localrc)
@@ -401,6 +401,7 @@ program MOAB_eval
     rc=ESMF_FAILURE
     return
   endif
+#endif
 
   ! Create exact dest. field
   xdstField = ESMF_FieldCreate(dstMesh, arrayspec, meshloc=ESMF_MESHLOC_ELEMENT, &
@@ -409,23 +410,23 @@ program MOAB_eval
     rc=ESMF_FAILURE
     return
   endif
-#else
-  ! Create dest. field
-  dstField = ESMF_FieldCreate(dstMesh, arrayspec, meshloc=ESMF_MESHLOC_NODE, &
-                              name="dest", rc=localrc)
-  if (localrc /=ESMF_SUCCESS) then
-    rc=ESMF_FAILURE
-    return
-  endif
-
-  ! Create exact dest. field
-  xdstField = ESMF_FieldCreate(dstMesh, arrayspec, meshloc=ESMF_MESHLOC_NODE, &
-                               name="xdest", rc=localrc)
-  if (localrc /=ESMF_SUCCESS) then
-    rc=ESMF_FAILURE
-    return
-  endif
-#endif
+! #else
+!   ! Create dest. field
+!   dstField = ESMF_FieldCreate(dstMesh, arrayspec, meshloc=ESMF_MESHLOC_NODE, &
+!                               name="dest", rc=localrc)
+!   if (localrc /=ESMF_SUCCESS) then
+!     rc=ESMF_FAILURE
+!     return
+!   endif
+  !
+  ! ! Create exact dest. field
+  ! xdstField = ESMF_FieldCreate(dstMesh, arrayspec, meshloc=ESMF_MESHLOC_NODE, &
+  !                              name="xdest", rc=localrc)
+  ! if (localrc /=ESMF_SUCCESS) then
+  !   rc=ESMF_FAILURE
+  !   return
+  ! endif
+! #endif
 
 #ifdef CHECK_ACCURACY
   ! Get Information about dst coords
