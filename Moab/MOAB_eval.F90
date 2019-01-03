@@ -173,7 +173,7 @@ program MOAB_eval
   integer, intent(out)  :: rc
 
   integer :: localrc
-  character(ESMF_MAXSTR) :: NM
+  character(12) :: NM
   type(ESMF_Mesh) :: srcMesh
   type(ESMF_Mesh) :: dstMesh
   type(ESMF_Field) :: srcField
