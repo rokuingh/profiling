@@ -171,7 +171,9 @@ program MOAB_eval
   character(len=*) :: srcfile, dstfile
   logical, intent(in) :: moab
   integer, intent(out)  :: rc
+
   integer :: localrc
+  character(ESMF_MAXSTR) :: NM
   type(ESMF_Mesh) :: srcMesh
   type(ESMF_Mesh) :: dstMesh
   type(ESMF_Field) :: srcField
@@ -189,7 +191,7 @@ program MOAB_eval
   integer :: i1,i2,i3
   real(ESMF_KIND_R8) :: x,y,z
   integer :: localPet, petCount
-    real(ESMF_KIND_R8) :: srcmass(1), dstmass(1), srcmassg(1), dstmassg(1)
+  real(ESMF_KIND_R8) :: srcmass(1), dstmass(1), srcmassg(1), dstmassg(1)
   real(ESMF_KIND_R8) :: maxerror(1), minerror(1), error
   real(ESMF_KIND_R8) :: maxerrorg(1), minerrorg(1), errorg
 
@@ -241,8 +243,9 @@ program MOAB_eval
   endif
 
   NM = "Native Mesh"
-  if (moab)
+  if (moab) then
     NM = "MOAB Mesh"
+  endif
 
   call ESMF_TraceRegionEnter(NM//" Source Create")
   call ESMF_VMLogMemInfo("before src mesh create")
@@ -531,6 +534,7 @@ program MOAB_eval
 #else
                              regridmethod=ESMF_REGRIDMETHOD_BILINEAR, &
 #endif
+                             polemethod=ESMF_POLEMETHOD_NONE, &
 ! COMMENT THESE OUT UNTIL THAT PART IS WORKING
 !          dstFracField=dstFracField, &
 !          srcFracField=srcFracField, &
