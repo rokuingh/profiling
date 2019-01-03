@@ -249,8 +249,6 @@ program MOAB_eval
 
   call ESMF_TraceRegionEnter(NM//" Source Create")
   call ESMF_VMLogMemInfo("before src mesh create")
-  ! call ESMF_VMBarrier(vm)
-  ! call ESMF_VMWtime(beg_time)
 
  !!!! Setup source mesh !!!!
  srcMesh=ESMF_MeshCreate(filename=srcfile, &
@@ -262,17 +260,8 @@ program MOAB_eval
     return
   endif
 
-  ! call ESMF_VMWtime(end_time)
   call ESMF_VMLogMemInfo("after src mesh create")
   call ESMF_TraceRegionExit(NM//" Source Create")
-  ! call compute_max_avg_time(end_time-beg_time, max_time, avg_time, rc=localrc)
-  ! if (localrc /=ESMF_SUCCESS) then
-  !   rc=ESMF_FAILURE
-  !   return
-  ! endif
-  ! if (localPet .eq. 0) then
-  !   write(*,*) moab, " src mesh create time  =", max_time,avg_time
-  ! endif
 
   ! Array spec for fields
   call ESMF_ArraySpecSet(arrayspec, 1, ESMF_TYPEKIND_R8, rc=rc)
@@ -371,11 +360,9 @@ program MOAB_eval
 #endif
 
 
-   !!!! Setup destination mesh !!!!
   call ESMF_TraceRegionEnter(NM//" Destination Create")
   call ESMF_VMLogMemInfo("before dst mesh create")
-  ! call ESMF_VMBarrier(vm)
-  ! call ESMF_VMWtime(beg_time)
+
   dstMesh=ESMF_MeshCreate(filename=dstfile, &
           fileformat=ESMF_FILEFORMAT_ESMFMESH, &
           rc=localrc)
@@ -384,18 +371,8 @@ program MOAB_eval
     return
   endif
 
-  ! call ESMF_VMWtime(end_time)
   call ESMF_VMLogMemInfo("after dst mesh create")
   call ESMF_TraceRegionExit(NM//" Destination Create")
-  ! call compute_max_avg_time(end_time-beg_time, max_time, avg_time, rc=localrc)
-  ! if (localrc /=ESMF_SUCCESS) then
-  !   rc=ESMF_FAILURE
-  !   return
-  ! endif
-  ! if (localPet .eq. 0) then
-  !   write(*,*) moab, " dst mesh create time  =", max_time,avg_time
-  ! endif
-
 
   ! Array spec
   call ESMF_ArraySpecSet(arrayspec, 1, ESMF_TYPEKIND_R8, rc=rc)
@@ -522,11 +499,9 @@ program MOAB_eval
 
 
   !!! Regrid forward from the A grid to the B grid
-  ! Regrid store
   call ESMF_TraceRegionEnter(NM//" Regrid Store")
   call ESMF_VMLogMemInfo("before regrid store")
-  ! call ESMF_VMBarrier(vm)
-  ! call ESMF_VMWtime(beg_time)
+
   call ESMF_FieldRegridStore(srcField, dstField=dstField, &
                              routeHandle=routeHandle, &
 #ifdef CONSERVE
@@ -545,22 +520,11 @@ program MOAB_eval
     return
   endif
 
-  ! call ESMF_VMWtime(end_time)
   call ESMF_VMLogMemInfo("after regrid store")
   call ESMF_TraceRegionExit(NM//" Regrid Store")
-  ! call compute_max_avg_time(end_time-beg_time, max_time, avg_time, rc=localrc)
-  ! if (localrc /=ESMF_SUCCESS) then
-  !   rc=ESMF_FAILURE
-  !   return
-  ! endif
-  ! if (localPet .eq. 0) then
-  !   write(*,*) moab, " regrid store time     =",max_time,avg_time
-  ! endif
 
   call ESMF_TraceRegionEnter(NM//" Regrid")
   call ESMF_VMLogMemInfo("before regrid")
-  ! call ESMF_VMBarrier(vm)
-  ! call ESMF_VMWtime(beg_time)
 
   ! Do regrid
   call ESMF_FieldRegrid(srcField, dstField, routeHandle, rc=localrc)
@@ -569,39 +533,20 @@ program MOAB_eval
     return
   endif
 
-  ! call ESMF_VMWtime(end_time)
   call ESMF_VMLogMemInfo("after regrid")
   call ESMF_TraceRegionExit(NM//" Regrid")
-  ! call compute_max_avg_time(end_time-beg_time, max_time, avg_time, rc=localrc)
-  ! if (localrc /=ESMF_SUCCESS) then
-  !   rc=ESMF_FAILURE
-  !   return
-  ! endif
-  ! if (localPet .eq. 0) then
-  !   write(*,*) moab, " regrid application time     =",max_time,avg_time
-  ! endif
 
   call ESMF_TraceRegionEnter(NM//" Regrid Release")
   call ESMF_VMLogMemInfo("before regrid release")
-  ! call ESMF_VMBarrier(vm)
-  ! call ESMF_VMWtime(beg_time)
+
   call ESMF_FieldRegridRelease(routeHandle, rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
     rc=ESMF_FAILURE
     return
   endif
 
-  ! call ESMF_VMWtime(end_time)
   call ESMF_VMLogMemInfo("after regrid release")
   call ESMF_TraceRegionExit(NM//" Regrid Release")
-  ! call compute_max_avg_time(end_time-beg_time, max_time, avg_time, rc=localrc)
-  ! if (localrc /=ESMF_SUCCESS) then
-  !   rc=ESMF_FAILURE
-  !   return
-  ! endif
-  ! if (localPet .eq. 0) then
-  !   write(*,*) moab, " regrid release time     =",max_time,avg_time
-  ! endif
 
 
 #ifdef CHECK_ACCURACY
@@ -816,8 +761,6 @@ program MOAB_eval
 
   call ESMF_TraceRegionEnter(NM//" Source Destroy")
   call ESMF_VMLogMemInfo("before src mesh destroy")
-  ! call ESMF_VMBarrier(vm)
-  ! call ESMF_VMWtime(beg_time)
 
   ! Free the meshes
   call ESMF_MeshDestroy(srcMesh, rc=localrc)
@@ -826,17 +769,8 @@ program MOAB_eval
     return
   endif
 
-  ! call ESMF_VMWtime(end_time)
   call ESMF_VMLogMemInfo("after src mesh destroy")
   call ESMF_TraceRegionExit(NM//" Source Destroy")
-  ! call compute_max_avg_time(end_time-beg_time, max_time, avg_time, rc=localrc)
-  ! if (localrc /=ESMF_SUCCESS) then
-  !   rc=ESMF_FAILURE
-  !   return
-  ! endif
-  ! if (localPet .eq. 0) then
-  !   write(*,*) moab, " src mesh destroy time =",max_time,avg_time
-  ! endif
 
 
 #ifdef CHECK_ACCURACY
@@ -848,8 +782,6 @@ program MOAB_eval
 
   call ESMF_TraceRegionEnter(NM//" Destination Destroy")
   call ESMF_VMLogMemInfo("before dst mesh destroy")
-  ! call ESMF_VMBarrier(vm)
-  ! call ESMF_VMWtime(beg_time)
 
   call ESMF_MeshDestroy(dstMesh, rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
@@ -857,18 +789,8 @@ program MOAB_eval
     return
   endif
 
-  ! call ESMF_VMWtime(end_time)
   call ESMF_VMLogMemInfo("after dst mesh destroy")
   call ESMF_TraceRegionExit(NM//" Destination Destroy")
-
-  ! call compute_max_avg_time(end_time-beg_time, max_time, avg_time, rc=localrc)
-  ! if (localrc /=ESMF_SUCCESS) then
-  !   rc=ESMF_FAILURE
-  !   return
-  ! endif
-  ! if (localPet .eq. 0) then
-  !   write(*,*) moab, " dst mesh destroy time =",max_time,avg_time
-  ! endif
 
 #ifdef CHECK_ACCURACY
   ! Output Accuracy results
