@@ -16,11 +16,14 @@ for num_run in range(1,runs+1):
         out = open(rftmp,"a")
         with open(resfilename) as f:
             for line in f:
+                # remove leading whitespace
                 nl = line.lstrip()
                 if str(num_procs) in nl:
-                    name, rest = nl.split(str(num_procs),1)
-                    newname = " ".join(name.split())
-                    nl = newname+"    "+str(num_procs)+rest
+                    # split out the method name
+                    method, rest = nl.split(str(num_procs),1)
+                    # remove all but one space in between words
+                    newmethod = " ".join(method.split())
+                    nl = newmethod+"    "+str(num_procs)+rest
                 out.write(nl)
         out.close()
 
