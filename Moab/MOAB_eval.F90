@@ -253,7 +253,7 @@ program MOAB_eval
   endif
 
   call ESMF_TraceRegionEnter(NM//" Source Create")
-  call ESMF_VMLogMemInfo("before src mesh create")
+  call ESMF_VMLogMemInfo("before "//NM//" src mesh create")
 
  !!!! Setup source mesh !!!!
  srcMesh=ESMF_MeshCreate(filename=srcfile, &
@@ -265,7 +265,7 @@ program MOAB_eval
     return
   endif
 
-  call ESMF_VMLogMemInfo("after src mesh create")
+  call ESMF_VMLogMemInfo("after "//NM//" src mesh create")
   call ESMF_TraceRegionExit(NM//" Source Create")
 
   ! Array spec for fields
@@ -385,7 +385,7 @@ program MOAB_eval
 
 
   call ESMF_TraceRegionEnter(NM//" Destination Create")
-  call ESMF_VMLogMemInfo("before dst mesh create")
+  call ESMF_VMLogMemInfo("before "//NM//" dst mesh create")
 
   dstMesh=ESMF_MeshCreate(filename=dstfile, &
           fileformat=ESMF_FILEFORMAT_ESMFMESH, &
@@ -395,7 +395,7 @@ program MOAB_eval
     return
   endif
 
-  call ESMF_VMLogMemInfo("after dst mesh create")
+  call ESMF_VMLogMemInfo("after "//NM//" dst mesh create")
   call ESMF_TraceRegionExit(NM//" Destination Create")
 
   ! Array spec
@@ -553,7 +553,7 @@ program MOAB_eval
 
   !!! Regrid forward from the A grid to the B grid
   call ESMF_TraceRegionEnter(NM//" Regrid Store")
-  call ESMF_VMLogMemInfo("before regrid store")
+  call ESMF_VMLogMemInfo("before "//NM//" regrid store")
 
   call ESMF_FieldRegridStore(srcField, dstField=dstField, &
                              routeHandle=routeHandle, &
@@ -573,11 +573,11 @@ program MOAB_eval
     return
   endif
 
-  call ESMF_VMLogMemInfo("after regrid store")
+  call ESMF_VMLogMemInfo("after "//NM//" regrid store")
   call ESMF_TraceRegionExit(NM//" Regrid Store")
 
   call ESMF_TraceRegionEnter(NM//" Regrid")
-  call ESMF_VMLogMemInfo("before regrid")
+  call ESMF_VMLogMemInfo("before "//NM//" regrid")
 
   ! Do regrid
   call ESMF_FieldRegrid(srcField, dstField, routeHandle, rc=localrc)
@@ -586,11 +586,11 @@ program MOAB_eval
     return
   endif
 
-  call ESMF_VMLogMemInfo("after regrid")
+  call ESMF_VMLogMemInfo("after "//NM//" regrid")
   call ESMF_TraceRegionExit(NM//" Regrid")
 
   call ESMF_TraceRegionEnter(NM//" Regrid Release")
-  call ESMF_VMLogMemInfo("before regrid release")
+  call ESMF_VMLogMemInfo("before "//NM//" regrid release")
 
   call ESMF_FieldRegridRelease(routeHandle, rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
@@ -598,7 +598,7 @@ program MOAB_eval
     return
   endif
 
-  call ESMF_VMLogMemInfo("after regrid release")
+  call ESMF_VMLogMemInfo("after "//NM//" regrid release")
   call ESMF_TraceRegionExit(NM//" Regrid Release")
 
 
@@ -813,7 +813,7 @@ program MOAB_eval
 #endif
 
   call ESMF_TraceRegionEnter(NM//" Source Destroy")
-  call ESMF_VMLogMemInfo("before src mesh destroy")
+  call ESMF_VMLogMemInfo("before "//NM//" src mesh destroy")
 
   ! Free the meshes
   call ESMF_MeshDestroy(srcMesh, rc=localrc)
@@ -822,7 +822,7 @@ program MOAB_eval
     return
   endif
 
-  call ESMF_VMLogMemInfo("after src mesh destroy")
+  call ESMF_VMLogMemInfo("after "//NM//" src mesh destroy")
   call ESMF_TraceRegionExit(NM//" Source Destroy")
 
 
@@ -834,7 +834,7 @@ program MOAB_eval
 
 
   call ESMF_TraceRegionEnter(NM//" Destination Destroy")
-  call ESMF_VMLogMemInfo("before dst mesh destroy")
+  call ESMF_VMLogMemInfo("before "//NM//" dst mesh destroy")
 
   call ESMF_MeshDestroy(dstMesh, rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
@@ -842,7 +842,7 @@ program MOAB_eval
     return
   endif
 
-  call ESMF_VMLogMemInfo("after dst mesh destroy")
+  call ESMF_VMLogMemInfo("after "//NM//" dst mesh destroy")
   call ESMF_TraceRegionExit(NM//" Destination Destroy")
 
 #ifdef CHECK_ACCURACY
