@@ -23,6 +23,7 @@ num_measurements = 2
 meminfo = ["VmRSS", "Total allocated space (bytes)"]
 
 # iterate sets of runs of different processors numbers from 36 - XXK
+run1 = True
 for num_run in range(1,runs+1):
     # iterate runs of increasing number of processors
     for num_procs in procs:
@@ -83,9 +84,9 @@ for num_run in range(1,runs+1):
         mem = np.sum(mem_results_array,0)/mem_results_array.shape[0]
 
         # write labels to file
-        out.write("processor count, "+(','.join(map(str,labels)))+'\n')
+        if run1:
+            out.write("processor count, "+(','.join(map(str,labels)))+'\n')
+            run1 = False
         out.write(str(num_procs)+", "+(",".join(format(x, "10.3f") for x in mems))+"\n")
-
-        import ipdb; ipdb.set_trace()
 
 out.close()
