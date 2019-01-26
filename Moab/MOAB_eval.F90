@@ -10,12 +10,13 @@
 !
 
 
-!#define CHECK_ACCURACY
+#define CHECK_ACCURACY
+#define OUTPUT_ERROR
 
 ! define one of the following regrid methods
-#define CONSERVE
+! #define CONSERVE
 ! #define BILINEAR_CENTERS
-! #define BILINEAR_CORNERS
+#define BILINEAR_CORNERS
 
 
 program MOAB_eval
@@ -221,6 +222,8 @@ program MOAB_eval
   integer :: cInd
 
 
+  real(ESMF_KIND_R8), parameter :: UNINITVAL = 1E-20
+  integer(ESMF_KIND_I4) :: unmapped_count(1), unmapped_countg(1)
   real(ESMF_KIND_R8),parameter :: DEG2RAD = 3.141592653589793_ESMF_KIND_R8/180.0_ESMF_KIND_R8
   real(ESMF_KIND_R8) :: theta, phi
   real(ESMF_KIND_R8) :: lat, lon
@@ -258,7 +261,7 @@ program MOAB_eval
  !!!! Setup source mesh !!!!
  srcMesh=ESMF_MeshCreate(filename=srcfile, &
 !          fileformat=ESMF_FILEFORMAT_SCRIP, &
-          fileformat=ESMF_FILEFORMAT_ESMFMESH, &
+          fileformat=ESMF_FILEFORMAT_UGRID, &
           rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
     rc=ESMF_FAILURE
@@ -388,7 +391,7 @@ program MOAB_eval
   call ESMF_VMLogMemInfo("before "//NM//" dst mesh create")
 
   dstMesh=ESMF_MeshCreate(filename=dstfile, &
-          fileformat=ESMF_FILEFORMAT_ESMFMESH, &
+          fileformat=ESMF_FILEFORMAT_UGRID, &
           rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
     rc=ESMF_FAILURE
@@ -527,7 +530,7 @@ program MOAB_eval
   do i1=clbnd(1),cubnd(1)
 
     ! set dst data
-    dstFarrayPtr(i1) = 0.0
+    dstFarrayPtr(i1) = UNINITVAL
 
     ! Get coords
     cInd=dstSpatialDim*(i1-clbnd(1))+1
@@ -542,13 +545,8 @@ program MOAB_eval
     xdstFarrayPtr(i1) = 2. + cos(theta)**2.*cos(2.*phi)
     !xdstFarrayPtr(i1) = 1.0
   enddo
-#endif
 
-#if 0
-  call ESMF_MeshWrite(srcMesh,"srcMesh")
-  call ESMF_MeshWrite(dstMesh,"dstMesh")
 #endif
-
 
 
   !!! Regrid forward from the A grid to the B grid
@@ -562,7 +560,7 @@ program MOAB_eval
 #else
                              regridmethod=ESMF_REGRIDMETHOD_BILINEAR, &
 #endif
-                             polemethod=ESMF_POLEMETHOD_NONE, &
+!                             polemethod=ESMF_POLEMETHOD_NONE, &
 ! COMMENT THESE OUT UNTIL THAT PART IS WORKING
 !          dstFracField=dstFracField, &
 !          srcFracField=srcFracField, &
@@ -580,7 +578,8 @@ program MOAB_eval
   call ESMF_VMLogMemInfo("before "//NM//" regrid")
 
   ! Do regrid
-  call ESMF_FieldRegrid(srcField, dstField, routeHandle, rc=localrc)
+  call ESMF_FieldRegrid(srcField, dstField, routeHandle, &
+                        zeroregion=ESMF_REGION_SELECT, rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
     rc=ESMF_FAILURE
     return
@@ -664,6 +663,8 @@ program MOAB_eval
 
   ! destination grid
   !! check relative error
+  unmapped_count(1) = 0;
+  unmapped_countg(1) = 0;
   do i1=clbnd(1),cubnd(1)
 
 #ifdef CONSERVE
@@ -681,27 +682,48 @@ program MOAB_eval
     ! write(*,*) i1,"::",dstFarrayPtr(i1),xdstFarrayPtr(i1)
 #endif
 
-    if (xdstFarrayPtr(i1) .ne. 0.0) then
-      error=ABS(dstFarrayPtr(i1) - xdstFarrayPtr(i1))/ABS(xdstFarrayPtr(i1))
-      errorTot=errorTot+error
-      if (error > maxerror(1)) then
-        maxerror(1) = error
-      endif
-      if (error < minerror(1)) then
-        minerror(1) = error
-      endif
+    if (dstFarrayPtr(i1) .eq. UNINITVAL) then
+        unmapped_count(1) = unmapped_count(1) + 1
+        ! write (*,*) "unmapped point at ", i1
+        error = 0
     else
-      error=ABS(dstFarrayPtr(i1) - xdstFarrayPtr(i1))/ABS(xdstFarrayPtr(i1))
-      errorTot=errorTot+error
-      if (error > maxerror(1)) then
-        maxerror(1) = error
-      endif
-      if (error < minerror(1)) then
-        minerror(1) = error
+      if (xdstFarrayPtr(i1) .ne. 0.0) then
+        error=ABS(dstFarrayPtr(i1) - xdstFarrayPtr(i1))/ABS(xdstFarrayPtr(i1))
+      else
+        error=ABS(dstFarrayPtr(i1) - xdstFarrayPtr(i1))
       endif
     endif
-  enddo
 
+    errorTot=errorTot+error
+    if (error > maxerror(1)) then
+      maxerror(1) = error
+    endif
+    if (error < minerror(1)) then
+      minerror(1) = error
+    endif
+
+
+#ifdef OUTPUT_ERROR
+    ! Get coords
+    cInd=dstSpatialDim*(i1-clbnd(1))+1
+    lon=dstOwnedCoords(cInd)
+    lat=dstOwnedCoords(cInd+1)
+
+    ! Set the source to be a function of the coordinates
+    theta = DEG2RAD*(lon)
+    phi = DEG2RAD*(90.-lat)
+
+    if (error > 1E-1) then
+      print *, i1, ", ", theta, ", ", phi
+      !print *, " Error = ", error, "Dst = ", dstFarrayPtr(i1), "Xct = ", xdstFarrayPtr(i1)
+    endif
+
+    if (dstFarrayPtr(i1) .eq. UNINITVAL) then
+      !  write (*,*) theta, ", ", phi
+    endif
+
+#endif
+  enddo
 
   srcmass(1) = 0.
 
@@ -763,6 +785,20 @@ program MOAB_eval
     rc=ESMF_FAILURE
     return
   endif
+
+  call ESMF_VMAllReduce(vm, unmapped_count, unmapped_countg, 1, ESMF_REDUCE_SUM, rc=localrc)
+  if (localrc /=ESMF_SUCCESS) then
+    rc=ESMF_FAILURE
+    return
+  endif
+
+#if 0
+  if (unmapped_countg(1) > 0) then
+    call ESMF_MeshWrite(srcMesh,"srcMesh"//NM)
+    call ESMF_MeshWrite(dstMesh,"dstMesh"//NM)
+  endif
+#endif
+
 
 #endif
 
@@ -849,6 +885,7 @@ program MOAB_eval
   ! Output Accuracy results
   if (localPet == 0) then
     write(*,*)
+    write(*,*) unmapped_countg(1), " unmapped points"
     write(*,*) "interp. max. rel. error = ", maxerrorg(1)
 #ifdef CONSERVE
     write(*,*) "conserv. rel. error     = ", ABS(dstmassg(1)-srcmassg(1))/srcmassg(1)
@@ -864,3 +901,4 @@ program MOAB_eval
 end subroutine time_mesh_regrid
 
 end program MOAB_eval
+
