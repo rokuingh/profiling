@@ -79,7 +79,6 @@ program MOAB_eval
      write(*,*)
   endif
 
-
   !!!!!!!!!!!!!!! Time Native Mesh !!!!!!!!!!!!
   if (localPet .eq. 0) then
      write(*,*) "======= Native ESMF Mesh ======="
@@ -260,8 +259,7 @@ program MOAB_eval
 
  !!!! Setup source mesh !!!!
  srcMesh=ESMF_MeshCreate(filename=srcfile, &
-!          fileformat=ESMF_FILEFORMAT_SCRIP, &
-          fileformat=ESMF_FILEFORMAT_UGRID, &
+          fileformat=ESMF_FILEFORMAT_ESMFMESH, &
           rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
     rc=ESMF_FAILURE
@@ -386,12 +384,11 @@ program MOAB_eval
 
 #endif
 
-
   call ESMF_TraceRegionEnter(NM//" Destination Create")
   call ESMF_VMLogMemInfo("before "//NM//" dst mesh create")
 
   dstMesh=ESMF_MeshCreate(filename=dstfile, &
-          fileformat=ESMF_FILEFORMAT_UGRID, &
+          fileformat=ESMF_FILEFORMAT_ESMFMESH, &
           rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
     rc=ESMF_FAILURE
@@ -714,12 +711,13 @@ program MOAB_eval
     phi = DEG2RAD*(90.-lat)
 
     if (error > 1E-1) then
-      print *, i1, ", ", theta, ", ", phi
-      !print *, " Error = ", error, "Dst = ", dstFarrayPtr(i1), "Xct = ", xdstFarrayPtr(i1)
+      !print *, i1, ", ", lon, ", ", lat
+      !print *, i1, error, dstFarrayPtr(i1), xdstFarrayPtr(i1)
+      print *, i1, error
     endif
 
     if (dstFarrayPtr(i1) .eq. UNINITVAL) then
-      !  write (*,*) theta, ", ", phi
+      ! write (*,*) lon, ", ", lat
     endif
 
 #endif
@@ -897,7 +895,6 @@ program MOAB_eval
   endif
 #endif
 #endif
-
 end subroutine time_mesh_regrid
 
 end program MOAB_eval
