@@ -11,7 +11,7 @@
 
 
 #define CHECK_ACCURACY
-#define OUTPUT_ERROR
+! #define OUTPUT_ERROR
 
 ! define one of the following regrid methods
 ! #define CONSERVE
@@ -84,14 +84,14 @@ program MOAB_eval
   if (localPet .eq. 0) then
      write(*,*) "======= Native ESMF Mesh ======="
   endif
-
+  
   ! Make sure  MOAB is off
     call ESMF_MeshSetMOAB(.false., rc=localrc)
   if (localrc .ne. ESMF_SUCCESS) then
      stop
   endif
-
-
+  
+  
   ! Regridding using ESMF native Mesh
   call time_mesh_regrid(srcfile, dstfile, moab=.false., rc=localrc)
    if (localrc /=ESMF_SUCCESS) then
@@ -105,20 +105,20 @@ program MOAB_eval
      write(*,*)
      write(*,*) "======= MOAB Mesh ======="
   endif
-
+  
   ! Turn on MOAB
   call ESMF_MeshSetMOAB(.true., rc=localrc)
   if (localrc .ne. ESMF_SUCCESS) then
      stop
   endif
-
+  
   ! Regridding using MOAB Mesh
   call time_mesh_regrid(srcfile, dstfile, moab=.true., rc=localrc)
    if (localrc /=ESMF_SUCCESS) then
      write(*,*) "ERROR IN REGRIDDING SUBROUTINE!"
           stop
     endif
-
+  
   ! Finalize ESMF
   call ESMF_Finalize(rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
@@ -180,6 +180,7 @@ program MOAB_eval
 
   integer :: localrc
   character(12) :: NM
+  type(ESMF_DistGrid) :: distgrid
   type(ESMF_Mesh) :: srcMesh
   type(ESMF_Mesh) :: dstMesh
   type(ESMF_Field) :: srcField
@@ -194,6 +195,9 @@ program MOAB_eval
   real(ESMF_KIND_R8), pointer :: srcAreaPtr(:), dstAreaPtr(:)
   real(ESMF_KIND_R8), pointer :: srcFracPtr(:), dstFracPtr(:)
   integer :: clbnd(1),cubnd(1)
+  integer(ESMF_KIND_I4), pointer :: seqIndexList(:)
+  integer :: id
+  
   integer :: i1,i2,i3
   real(ESMF_KIND_R8) :: x,y,z
   integer :: localPet, petCount
@@ -260,13 +264,18 @@ program MOAB_eval
 
  !!!! Setup source mesh !!!!
  srcMesh=ESMF_MeshCreate(filename=srcfile, &
-!          fileformat=ESMF_FILEFORMAT_SCRIP, &
-          fileformat=ESMF_FILEFORMAT_UGRID, &
+          fileformat=ESMF_FILEFORMAT_ESMFMESH, &
           rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
     rc=ESMF_FAILURE
     return
   endif
+
+    ! write(filename,"(A15,I1,A1,I1)") "OriginalMBMesh.", petCount, ".", localPet
+    ! call ESMF_MeshWrite(tempMesh, filename)
+    ! write(filename,"(A19,I1,A1,I1)") "OriginalMBMeshDual.", petCount, ".", localPet
+    ! call ESMF_MeshWrite(srcMeshDual, filename)
+    ! call ESMF_MeshWrite(srcMesh, "DupNativeMesh")
 
   call ESMF_VMLogMemInfo("after "//NM//" src mesh create")
   call ESMF_TraceRegionExit(NM//" Source Create")
@@ -391,7 +400,7 @@ program MOAB_eval
   call ESMF_VMLogMemInfo("before "//NM//" dst mesh create")
 
   dstMesh=ESMF_MeshCreate(filename=dstfile, &
-          fileformat=ESMF_FILEFORMAT_UGRID, &
+          fileformat=ESMF_FILEFORMAT_ESMFMESH, &
           rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
     rc=ESMF_FAILURE
@@ -661,11 +670,43 @@ program MOAB_eval
 #endif
 #endif
 
+#ifdef CONSERVE
+  call ESMF_MeshGet(dstMesh, elementDistgrid=distgrid, rc=localrc)
+  if (localrc /=ESMF_SUCCESS) then
+    rc=ESMF_FAILURE
+    return
+  endif
+#endif
+
+#ifdef BILINEAR_CENTERS
+  call ESMF_MeshGet(dstMesh, elementDistgrid=distgrid, rc=localrc)
+  if (localrc /=ESMF_SUCCESS) then
+    rc=ESMF_FAILURE
+    return
+  endif
+#endif
+
+#ifdef BILINEAR_CORNERS
+  call ESMF_MeshGet(dstMesh, nodalDistgrid=distgrid, rc=localrc)
+  if (localrc /=ESMF_SUCCESS) then
+    rc=ESMF_FAILURE
+    return
+  endif
+#endif
+  
+  call ESMF_DistGridGet(distgrid, 0, seqIndexList=seqIndexList, rc=localrc)
+  if (localrc /=ESMF_SUCCESS) then
+    rc=ESMF_FAILURE
+    return
+  endif
+  
   ! destination grid
   !! check relative error
   unmapped_count(1) = 0;
   unmapped_countg(1) = 0;
   do i1=clbnd(1),cubnd(1)
+    
+    id = seqIndexList(i1)
 
 #ifdef CONSERVE
     ! This is WRONG, shouldn't include Frac
@@ -714,12 +755,13 @@ program MOAB_eval
     phi = DEG2RAD*(90.-lat)
 
     if (error > 1E-1) then
-      print *, i1, ", ", theta, ", ", phi
+      ! print *, i1, ", ", lon, ", ", lat
       !print *, " Error = ", error, "Dst = ", dstFarrayPtr(i1), "Xct = ", xdstFarrayPtr(i1)
+      errnum = errnum + 1
     endif
 
     if (dstFarrayPtr(i1) .eq. UNINITVAL) then
-      !  write (*,*) theta, ", ", phi
+       write (*,*) localPet, ", ", theta, ", ", phi
     endif
 
 #endif
@@ -791,6 +833,16 @@ program MOAB_eval
     rc=ESMF_FAILURE
     return
   endif
+
+#ifdef OUTPUT_ERROR
+  call ESMF_VMAllReduce(vm, errnum, gerrnum, 1, ESMF_REDUCE_SUM, rc=localrc)
+  if (localrc /=ESMF_SUCCESS) then
+    rc=ESMF_FAILURE
+    return
+  endif
+  
+  
+#endif
 
 #if 0
   if (unmapped_countg(1) > 0) then
