@@ -194,8 +194,8 @@ program MOAB_eval
   real(ESMF_KIND_R8), pointer :: srcAreaPtr(:), dstAreaPtr(:)
   real(ESMF_KIND_R8), pointer :: srcFracPtr(:), dstFracPtr(:)
   integer :: clbnd(1),cubnd(1)
-  integer(ESMF_KIND_I4), pointer :: seqIndexList(:)
-  integer :: id
+  integer, allocatable :: seqIndexList(:)
+  integer :: id, lcount
   
   integer :: i1,i2,i3
   real(ESMF_KIND_R8) :: x,y,z
@@ -692,6 +692,13 @@ program MOAB_eval
   endif
 #endif
   
+  call ESMF_DistGridGet(distgrid, 0, elementCount=lcount, rc=localrc)
+  if (localrc /=ESMF_SUCCESS) then
+    rc=ESMF_FAILURE
+    return
+  endif
+  
+  allocate(seqIndexList(lcount))
   call ESMF_DistGridGet(distgrid, 0, seqIndexList=seqIndexList, rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
     rc=ESMF_FAILURE
@@ -721,12 +728,14 @@ program MOAB_eval
     ! write(*,*) i1,"::",dstFarrayPtr(i1),xdstFarrayPtr(i1)
 #endif
 
-    if (dstFarrayPtr(i1) .eq. UNINITVAL) then
+    ! if value .eq. UNINITVAL
+    if (abs (dstFarrayPtr(i1) - UNINITVAL) < 1.0D-12) then
         unmapped_count(1) = unmapped_count(1) + 1
         ! write (*,*) "unmapped point at ", i1
         error = 0
     else
-      if (xdstFarrayPtr(i1) .ne. 0.0) then
+      ! if value .ne. 0 
+      if (abs(xdstFarrayPtr(i1)) > 1.0D-12) then
         error=ABS(dstFarrayPtr(i1) - xdstFarrayPtr(i1))/ABS(xdstFarrayPtr(i1))
       else
         error=ABS(dstFarrayPtr(i1) - xdstFarrayPtr(i1))
@@ -756,6 +765,10 @@ program MOAB_eval
       !print *, i1, ", ", lon, ", ", lat
       !print *, i1, error, dstFarrayPtr(i1), xdstFarrayPtr(i1)
       print *, i1, error
+    endif
+    
+    if (id == 4323801 ) then
+      print *, id, ", ", lon, ", ", lat
     endif
 
     if (dstFarrayPtr(i1) .eq. UNINITVAL) then
@@ -851,6 +864,8 @@ program MOAB_eval
 
 
 #endif
+
+  deallocate(seqIndexList)
 
   ! Destroy the Fields
   call ESMF_FieldDestroy(srcField, rc=localrc)
