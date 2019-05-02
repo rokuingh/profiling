@@ -762,18 +762,19 @@ program MOAB_eval
     phi = DEG2RAD*(90.-lat)
 
     if (error > 1E-1) then
-      !print *, i1, ", ", lon, ", ", lat
-      !print *, i1, error, dstFarrayPtr(i1), xdstFarrayPtr(i1)
-      print *, i1, error
+      ! print *, i1, ", ", lon, ", ", lat
+      !print *, " Error = ", error, "Dst = ", dstFarrayPtr(i1), "Xct = ", xdstFarrayPtr(i1)
     endif
     
-    if (id == 4323801 ) then
-      print *, id, ", ", lon, ", ", lat
-    endif
+    ! if (id == 4323801 ) then
+    !   print *, id, ", ", lon, ", ", lat
+    ! endif
 
-    if (dstFarrayPtr(i1) .eq. UNINITVAL) then
-      ! write (*,*) lon, ", ", lat
-    endif
+    ! if (dstFarrayPtr(i1) .eq. UNINITVAL) then
+    !   write (*,*) "unmapped: ", localPet, ", ", theta, ", ", phi, ", ", dstFarrayPtr(i1)
+    ! else 
+    !   write (*,*) "mapped: ", localPet, ", ", theta, ", ", phi, ", ", dstFarrayPtr(i1)
+    ! endif
 
 #endif
   enddo
@@ -844,16 +845,6 @@ program MOAB_eval
     rc=ESMF_FAILURE
     return
   endif
-
-#ifdef OUTPUT_ERROR
-  call ESMF_VMAllReduce(vm, errnum, gerrnum, 1, ESMF_REDUCE_SUM, rc=localrc)
-  if (localrc /=ESMF_SUCCESS) then
-    rc=ESMF_FAILURE
-    return
-  endif
-  
-  
-#endif
 
 #if 0
   if (unmapped_countg(1) > 0) then
