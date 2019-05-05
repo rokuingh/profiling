@@ -182,11 +182,10 @@ program MOAB_eval
   type(ESMF_DistGrid) :: distgrid
   type(ESMF_Mesh) :: srcMesh
   type(ESMF_Mesh) :: dstMesh
-  type(ESMF_Field) :: srcField
-  type(ESMF_Field) :: dstField
-  type(ESMF_Field) :: xdstField
+  type(ESMF_Field) :: srcField, dstField, xdstField
+  type(ESMF_Array) :: srcFieldArray, dstFieldArray, xdstFieldArray
   type(ESMF_Field) :: srcAreaField, dstAreaField
-  type(ESMF_Field) :: srcFracField, dstFracField
+  ! type(ESMF_Field) :: srcFracField, dstFracField
   type(ESMF_RouteHandle) :: routeHandle
   type(ESMF_ArraySpec) :: arrayspec
   type(ESMF_VM) :: vm
@@ -269,12 +268,6 @@ program MOAB_eval
     rc=ESMF_FAILURE
     return
   endif
-
-    ! write(filename,"(A15,I1,A1,I1)") "OriginalMBMesh.", petCount, ".", localPet
-    ! call ESMF_MeshWrite(tempMesh, filename)
-    ! write(filename,"(A19,I1,A1,I1)") "OriginalMBMeshDual.", petCount, ".", localPet
-    ! call ESMF_MeshWrite(srcMeshDual, filename)
-    ! call ESMF_MeshWrite(srcMesh, "DupNativeMesh")
 
   call ESMF_VMLogMemInfo("after "//NM//" src mesh create")
   call ESMF_TraceRegionExit(NM//" Source Create")
@@ -567,7 +560,6 @@ program MOAB_eval
 #else
                              regridmethod=ESMF_REGRIDMETHOD_BILINEAR, &
 #endif
-!                             polemethod=ESMF_POLEMETHOD_NONE, &
 ! COMMENT THESE OUT UNTIL THAT PART IS WORKING
 !          dstFracField=dstFracField, &
 !          srcFracField=srcFracField, &
@@ -631,7 +623,7 @@ program MOAB_eval
   minerror(1) = 100000.
   maxerror(1) = 0.
   error = 0.
-  errorTot=0.0
+  errorTot = 0.0
   dstmass(1) = 0.
 
   ! get dst Field
@@ -765,16 +757,6 @@ program MOAB_eval
       ! print *, i1, ", ", lon, ", ", lat
       !print *, " Error = ", error, "Dst = ", dstFarrayPtr(i1), "Xct = ", xdstFarrayPtr(i1)
     endif
-    
-    ! if (id == 4323801 ) then
-    !   print *, id, ", ", lon, ", ", lat
-    ! endif
-
-    ! if (dstFarrayPtr(i1) .eq. UNINITVAL) then
-    !   write (*,*) "unmapped: ", localPet, ", ", theta, ", ", phi, ", ", dstFarrayPtr(i1)
-    ! else 
-    !   write (*,*) "mapped: ", localPet, ", ", theta, ", ", phi, ", ", dstFarrayPtr(i1)
-    ! endif
 
 #endif
   enddo
@@ -847,10 +829,18 @@ program MOAB_eval
   endif
 
 #if 0
-  if (unmapped_countg(1) > 0) then
-    call ESMF_MeshWrite(srcMesh,"srcMesh"//NM)
-    call ESMF_MeshWrite(dstMesh,"dstMesh"//NM)
+  call ESMF_FieldGet(srcField, array=srcFieldArray, rc=localrc)
+  call ESMF_FieldGet(dstField, array=dstFieldArray, rc=localrc)
+  call ESMF_FieldGet(xdstField, array=xdstFieldArray, rc=localrc)
+
+  if (localrc /=ESMF_SUCCESS) then
+    rc=ESMF_FAILURE
+    return
   endif
+
+  ! currently only works for the native mesh, better not to run this
+  call ESMF_MeshWriteVTK(srcMesh,"srcMesh"//NM, srcFieldArray)
+  call ESMF_MeshWriteVTK(dstMesh,"dstMesh"//NM, dstFieldArray, xdstFieldArray)
 #endif
 
 
