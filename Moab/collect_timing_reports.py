@@ -13,7 +13,7 @@ for num_run in range(1,runs+1):
         resfilename = os.path.join(os.getcwd(), str(num_run), str(num_procs), "ESMF_Profile.summary")
         rftmp = resfilename+".tmp"
 
-        out = open(rftmp,"a")
+        out = open(rftmp,"w")
         with open(resfilename) as f:
             for line in f:
                 # remove leading whitespace
@@ -42,13 +42,15 @@ for num_run in range(1,runs+1):
         f_out.rename(index={"Mean (s)":str(num_procs)}, inplace=True)
 
         keep_col = ["Native Mesh Source Create", "Native Mesh Destination Create",
-                    "Native Mesh Regrid Store", "Native Mesh Weight Generation",
-                    "Native Mesh ArraySMMStore", "Native Mesh Regrid",
+                    # "Native Mesh Regrid Store", "Native Mesh Weight Generation",
+                    # "Native Mesh ArraySMMStore", "Native Mesh Regrid",
+                    "Native Mesh Regrid Store", "Native Mesh Regrid",
                     "Native Mesh Regrid Release", "Native Mesh Source Destroy",
                     "Native Mesh Destination Destroy",
                     "MOAB Mesh Source Create", "MOAB Mesh Destination Create",
-                    "MOAB Mesh Regrid Store", "MOAB Mesh Weight Generation",
-                    "MOAB Mesh ArraySMMStore", "MOAB Mesh Regrid",
+                    # "MOAB Mesh Regrid Store", "MOAB Mesh Weight Generation",
+                    # "MOAB Mesh ArraySMMStore", "MOAB Mesh Regrid",
+                    "MOAB Mesh Regrid Store", "MOAB Mesh Regrid",
                     "MOAB Mesh Regrid Release", "MOAB Mesh Source Destroy",
                     "MOAB Mesh Destination Destroy",
                     ]

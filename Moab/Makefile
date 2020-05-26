@@ -56,7 +56,7 @@ MOAB_eval:
 # -----------------------------------------------------------------------------
 .PHONY: clean distclean
 clean:
-	rm -f MOAB_eval *.o *.mod
+	rm -f MOAB_eval *.o *.mod PET*
 distclean: clean
 	rm -f PET*.ESMF_LogFile *.err *.out *.csv
 run:

@@ -4,9 +4,14 @@
 *.orig
 *.log
 ESMF_LogFile
-PET*.ESMF_Logfile
+PET*.ESMF_LogFile
 *.stdout
 *.out
 *.err
 *.csv
+*.vtk
+*.nc
+*.o
 /log*
+MOAB_eval
+runs

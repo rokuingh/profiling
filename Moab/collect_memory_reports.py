@@ -18,7 +18,8 @@ else:
     out = open(memoutfilename,"a")
 
 
-num_val = 18
+# this should be 18 when SMM and weight gen are included
+num_val = 14
 num_measurements = 2
 meminfo = ["VmRSS", "Total allocated space (bytes)"]
 
