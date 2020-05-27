@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+#PBS -N MOAB_eval%np%
+#PBS -A P93300606
+#PBS -l walltime=00:30:00
+#PBS -q economy
+#PBS -l select=%nn%:ncpus=36:mpiprocs=36
+#PBS -j oe
+#PBS -m ae
+#PBS -o MOAB_eval%np%.out
+#PBS -e MOAB_eval%np%.err
+
+mpiexec_mpt ./MOAB_eval %grid1%
+
