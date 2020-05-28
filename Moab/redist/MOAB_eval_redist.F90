@@ -127,8 +127,8 @@ program MOAB_eval_redist
   integer, allocatable :: asil(:)
 
   ! grid sizes are hardcoded, just easier this way
-  ! integer, parameter :: numNode = 1639680  ! ll1280x1280_grid.esmf.nc
-  integer, parameter :: numNode = 6480 ! ll80x80_grid.esmf.nc
+  integer, parameter :: numNode = 1639680  ! ll1280x1280_grid.esmf.nc
+  ! integer, parameter :: numNode = 6480 ! ll80x80_grid.esmf.nc
   integer :: minI, maxI, nn
 
   ! result code
@@ -176,7 +176,7 @@ program MOAB_eval_redist
     return
   endif
 
-  print *, localPet, "# distgrid1 minI = ", minval(asil), " maxI = ", maxval(asil)
+  ! print *, localPet, "# distgrid1 minI = ", minval(asil), " maxI = ", maxval(asil)
   deallocate(asil)
 
   minI = (petCount - localPet - 1)*nn + 1
@@ -194,7 +194,7 @@ program MOAB_eval_redist
     return
   endif
 
-  print *, localPet, "# distgrid2 minI = ", minval(asil), " maxI = ", maxval(asil)
+  ! print *, localPet, "# distgrid2 minI = ", minval(asil), " maxI = ", maxval(asil)
   deallocate(asil)
 
 #define profile_mesh_create
