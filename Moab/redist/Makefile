@@ -55,8 +55,8 @@ MOAB_eval_redist:
 # -----------------------------------------------------------------------------
 .PHONY: clean distclean
 clean:
-	rm -f MOAB_eval_redist *.o *.mod PET*
+	rm -f MOAB_eval_redist *.o *.mod
 distclean: clean
-	rm -f PET*.ESMF_LogFile *.err *.out *.csv
+	rm -f PET*.ESMF_LogFile *.err *.out *.csv ESMF_Profile*
 run:
 	./benchmark
