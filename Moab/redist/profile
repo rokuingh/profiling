@@ -12,12 +12,12 @@ export ESMFMKFILE=/glade/work/rokuingh/ESMF/MBMESHREDIST/lib/libO/Linux.intel.64
 # export ESMFMKFILE=/home/ryan/sandbox/ESMF_MBMESHREDIST/lib/libg/Linux.gfortran.64.openmpi.default/esmf.mk
 
 
-SRCDIR="${HOME}/sandbox/profiling/Moab/redist"
-SCRIPTDIR="$SRCDIR"
+SRCDIR="/glade/work/rokuingh/sandbox/profiling/Moab/redist"
+SCRIPTDIR=$SRCDIR
 ROOTDIR="/glade/work/rokuingh/MBMeshRedistPerformanceResults"
 # uncomment the following lines to test in non-Cheyenne environment
 # SRCDIR="/home/ryan/sandbox/profiling/Moab/redist"
-# SCRIPTDIR="$SRCDIR"
+# SCRIPTDIR=$SRCDIR
 # ROOTDIR="/home/ryan/MBMeshRedistPerformanceResults"
 
 DATADIR=$SRCDIR/data
@@ -39,6 +39,13 @@ make > make.out 2>&1
 
 # create execution directory and copy executable to it
 EXECDIR=$(python $SCRIPTDIR/run_generate_id.py $ROOTDIR 2>&1)
+if [[ $EXECDIR != "$ROOTDIR"* ]]; then
+  echo "EXECDIR was not set properly."
+  echo ""
+  echo $EXECDIR
+  exit 1
+fi
+
 mkdir $EXECDIR
 cd $EXECDIR
 
