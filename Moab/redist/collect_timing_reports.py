@@ -15,7 +15,7 @@ for num_run in range(1,runs+1):
     for num_procs in procs:
         if num_procs <= nprocs:
 
-            resfilename = os.path.join(os.getcwd(), str(num_run), str(num_procs),   "ESMF_Profile.summary")
+            resfilename = os.path.join(os.getcwd(), str(num_procs)+"-"+str(num_run), "ESMF_Profile.summary")
             rftmp = resfilename+".tmp"
     
             out = open(rftmp,"a")
