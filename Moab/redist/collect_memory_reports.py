@@ -10,8 +10,6 @@ runs = int(runs)
 
 procs = [36*2**x for x in range(8)]
 
-print (procs)
-
 out = None
 memoutfilename = "redist_memory_profile_results.csv"
 
@@ -83,7 +81,7 @@ for num_run in range(1,runs+1):
                 # split off the 'before' and '(bytes)' from labels
                 labels = [x[0].split("before ")[1] for x in mem_results]
                 labels = [x.split(" (bytes)")[0] if "bytes" in x else x     for x in labels]
-    
+
                 # write mem results to numpy array
                 assert(len(mems) == (num_val*num_measurements))
                 mem_results_array[proc,:] = np.array(mems)

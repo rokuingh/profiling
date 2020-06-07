@@ -71,6 +71,6 @@ do
 
     qsub $SCRIPTDIR/MOAB_eval_run_pbs_$pnum
     echo "qsub $SCRIPTDIR/MOAB_eval_run_pbs_$pnum"
-    bash $SCRIPTDIR/MOAB_eval_run_pbs_$pnum
+    # bash $SCRIPTDIR/MOAB_eval_run_pbs_$pnum
   fi
 done
