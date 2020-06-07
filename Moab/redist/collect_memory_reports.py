@@ -11,7 +11,7 @@ runs = int(runs)
 procs = [36*2**x for x in range(8)]
 
 out = None
-memoutfilename = "redist_memory_profile_results.csv"
+memoutfilename = "mbmesh_redist_memory_profile_results.csv"
 
 if not os.path.isfile(memoutfilename):
     out = open(memoutfilename,"w")
