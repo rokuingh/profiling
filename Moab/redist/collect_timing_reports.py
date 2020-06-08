@@ -9,6 +9,11 @@ runs = sys.argv[2]
 runs = int(runs)
 
 procs = [36*2**x for x in range(8)]
+
+# nprocs = 6
+# runs = 1
+# procs = [6]
+
 timeoutfilename = "mbmesh_redist_timing_profile_results.csv"
 
 for num_run in range(1,runs+1):
@@ -16,6 +21,7 @@ for num_run in range(1,runs+1):
         if num_procs <= nprocs:
 
             resfilename = os.path.join(os.getcwd(), str(num_procs)+"-"+str(num_run), "ESMF_Profile.summary")
+            # resfilename = os.path.join(os.getcwd(), "ESMF_Profile.summary")
             rftmp = resfilename+".tmp"
     
             out = open(rftmp,"a")
@@ -46,8 +52,14 @@ for num_run in range(1,runs+1):
     
             f_out.rename(index={"Mean (s)":str(num_procs)}, inplace=True)
     
-            keep_col = ["Native Mesh Create", "Native Mesh Redist",
-                        "MOAB Mesh Create", "MOAB Mesh Redist",
+            keep_col = ["NVMesh Create", "MBMesh Create", 
+                        "mbmesh ddir processing", "mbmesh element communication", "moab communication", 
+                        "mbmesh post processing", "ddir initialization", "split id preprocessing", 
+                        "split id postprocessing",
+                        #
+                        "nvmesh post processing", "nvmesh communication", "nvmesh ddir processing 2", 
+                        "nvmesh ddir processing", "ddir initialization", "split id preprocessing", 
+                        "split id postprocessing",
                         ]
             f_out = f_out[keep_col]
     

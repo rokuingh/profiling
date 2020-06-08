@@ -10,6 +10,10 @@ runs = int(runs)
 
 procs = [36*2**x for x in range(8)]
 
+# nprocs = 6
+# runs = 1
+# procs = [6]
+
 out = None
 memoutfilename = "mbmesh_redist_memory_profile_results.csv"
 
@@ -21,7 +25,7 @@ else:
 
 
 # includes native and mbmesh, all vmlogmeminfo blocks
-num_val = 4
+num_val = 16
 num_measurements = 2
 meminfo = ["VmRSS", "Total allocated space (bytes)"]
 
@@ -43,6 +47,9 @@ for num_run in range(1,runs+1):
                 logname = os.path.join(os.getcwd(), str(num_procs)+"-"+str(num_run),
                     "PET"+(str(proc).zfill(int(math.ceil(math.log(num_procs,10)))))+
                     ".ESMF_LogFile")
+                # logname = os.path.join(os.getcwd(),
+                #     "PET"+(str(proc).zfill(int(math.ceil(math.log(num_procs,10)))))+
+                #     ".ESMF_LogFile")
                 with open(logname) as f:
                     for line in f:
                         if any(x in line for x in meminfo):
