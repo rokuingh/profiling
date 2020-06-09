@@ -8,9 +8,9 @@ nrun=$2
 
 procs=(36 72 144 288 576 1152 2304 4608)
 
-export ESMFMKFILE=/glade/work/rokuingh/ESMF/MBMESHREDIST/lib/libO/Linux.intel.64.mpt.default/esmf.mk
+# export ESMFMKFILE=/glade/work/rokuingh/ESMF/MBMESHREDIST/lib/libO/Linux.intel.64.mpt.default/esmf.mk
 # export ESMFMKFILE=/home/ryan/sandbox/ESMF_MBMESHREDIST/lib/libg/Linux.gfortran.64.openmpi.default/esmf.mk
-
+export ESMFMKFILE=/glade/work/rokuingh/sandbox/esmf/lib/libO/Linux.intel.64.mpt.default/esmf.mk
 
 SRCDIR="/glade/work/rokuingh/sandbox/profiling/Moab/redist"
 SCRIPTDIR=$SRCDIR

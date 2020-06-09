@@ -54,12 +54,12 @@ for num_run in range(1,runs+1):
     
             keep_col = ["NVMesh Create", "MBMesh Create", 
                         "mbmesh ddir processing", "mbmesh element communication", "moab communication", 
-                        "mbmesh post processing", "ddir initialization", "split id preprocessing", 
-                        "split id postprocessing",
+                        "mbmesh post processing", "mbmesh ddir initialization", "mbmesh split id preprocessing", 
+                        "mbmesh split id postprocessing",
                         #
                         "nvmesh post processing", "nvmesh communication", "nvmesh ddir processing 2", 
-                        "nvmesh ddir processing", "ddir initialization", "split id preprocessing", 
-                        "split id postprocessing",
+                        "nvmesh ddir processing", "nvmesh ddir initialization", "nvmesh split id preprocessing", 
+                        "nvmesh split id postprocessing",
                         ]
             f_out = f_out[keep_col]
     

@@ -127,8 +127,8 @@ program MOAB_eval_redist
   integer, allocatable :: asil(:)
 
   ! grid sizes are hardcoded, just easier this way
-  ! integer, parameter :: numNode = 1639680  ! ll1280x1280_grid.esmf.nc
-  integer, parameter :: numNode = 6480 ! ll80x80_grid.esmf.nc
+  integer, parameter :: numNode = 1639680  ! ll1280x1280_grid.esmf.nc
+  ! integer, parameter :: numNode = 6480 ! ll80x80_grid.esmf.nc
   integer :: minI, maxI, nn
 
   ! result code
@@ -240,6 +240,7 @@ program MOAB_eval_redist
 ! remove the complete redist, as sufficient redist with create to demonstrate timing profile issue
 #if 0
 
+#define profile_mesh_redist
 #ifdef profile_mesh_redist
   call ESMF_TraceRegionEnter(NM//" Redist")
   call ESMF_VMLogMemInfo("before "//NM//" redist")
@@ -254,7 +255,6 @@ program MOAB_eval_redist
   call ESMF_VMLogMemInfo("after "//NM//" redist")
   call ESMF_TraceRegionExit(NM//" Redist")
 #endif
-
 #endif
 
 #ifdef profile_mesh_destroy
