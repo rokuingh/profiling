@@ -18,29 +18,11 @@ program MOAB_eval_redist
   integer :: localrc
   integer :: localPet, petCount
   type(ESMF_VM) :: vm
-  character(ESMF_MAXPATHLEN) :: srcfile
-  integer :: numargs
 
    ! Init ESMF
   call ESMF_Initialize(rc=localrc, logappendflag=.false.)
   if (localrc /=ESMF_SUCCESS) then
      stop
-  endif
-
-  ! Error check number of command line args
-  call ESMF_UtilGetArgC(count=numargs, rc=localrc)
-  if (localrc /=ESMF_SUCCESS) then
-    stop
-  endif
-  if (numargs .ne. 1) then
-     write(*,*) "ERROR: MOAB_eval Should be run with 1 argument"
-     stop
-  endif
-
-  ! Get filenames
-    call ESMF_UtilGetArg(1, argvalue=srcfile, rc=localrc)
-  if (localrc /=ESMF_SUCCESS) then
-    stop
   endif
 
   ! get pet info
@@ -57,7 +39,6 @@ program MOAB_eval_redist
   ! Write out number of PETS
   if (localPet .eq. 0) then
      write(*,*)
-     write(*,*) "REDIST on ",trim(srcfile)
      write(*,*) "NUMBER OF PROCS = ",petCount
      write(*,*)
   endif
@@ -75,7 +56,7 @@ program MOAB_eval_redist
   
   
   ! Regridding using ESMF native Mesh
-  call profile_mesh_redist(srcfile, moab=.false., rc=localrc)
+  call profile_mesh_redist(moab=.false., rc=localrc)
    if (localrc /=ESMF_SUCCESS) then
      write(*,*) "ERROR IN REDIST SUBROUTINE!"
      stop
@@ -95,7 +76,7 @@ program MOAB_eval_redist
   endif
   
   ! Regridding using MOAB Mesh
-  call profile_mesh_redist(srcfile, moab=.true., rc=localrc)
+  call profile_mesh_redist(moab=.true., rc=localrc)
    if (localrc /=ESMF_SUCCESS) then
      write(*,*) "ERROR IN REDIST SUBROUTINE!"
           stop
@@ -110,12 +91,12 @@ program MOAB_eval_redist
   contains
 
 
- subroutine profile_mesh_redist(srcfile, moab, rc)
-  character(len=*) :: srcfile
+ subroutine profile_mesh_redist(moab, rc)
   logical, intent(in) :: moab
   integer, intent(out)  :: rc
 
   integer :: localrc
+
   character(12) :: NM
   type(ESMF_VM) :: vm
   type(ESMF_Mesh) :: srcMesh, redistMesh
@@ -126,9 +107,12 @@ program MOAB_eval_redist
   integer, allocatable :: sil(:)
   integer, allocatable :: asil(:)
 
-  ! grid sizes are hardcoded, just easier this way
-  integer, parameter :: numNode = 1639680  ! ll1280x1280_grid.esmf.nc
-  ! integer, parameter :: numNode = 6480 ! ll80x80_grid.esmf.nc
+  !!! grid sizes are hardcoded, just easier this way
+  character(len=50), parameter :: srcfile = "data/ll80x80_grid.esmf.nc"
+  integer, parameter :: numNode = 6480 ! ll80x80_grid.esmf.nc
+  ! character(len=50), parameter :: srcfile = "data/ll1280x1280_grid.esmf.nc"
+  ! integer, parameter :: numNode = 1639680  ! ll1280x1280_grid.esmf.nc
+
   integer :: minI, maxI, nn
 
   ! result code
