@@ -9,7 +9,6 @@ nrun=$2
 procs=(36 72 144 288 576 1152 2304 4608)
 
 # export ESMFMKFILE=/glade/work/rokuingh/ESMF/MBMESHREDIST/lib/libO/Linux.intel.64.mpt.default/esmf.mk
-# export ESMFMKFILE=/home/ryan/sandbox/ESMF_MBMESHREDIST/lib/libg/Linux.gfortran.64.openmpi.default/esmf.mk
 export ESMFMKFILE=/glade/work/rokuingh/sandbox/esmf/lib/libO/Linux.intel.64.mpt.default/esmf.mk
 
 SRCDIR="/glade/work/rokuingh/sandbox/profiling/Moab/redist"
@@ -22,6 +21,8 @@ ROOTDIR="/glade/work/rokuingh/MBMeshRedistPerformanceResults"
 
 DATADIR=$SRCDIR/data
 GRID1=$DATADIR/ll1280x1280_grid.esmf.nc
+GRID1size=1639680
+
 
 # load the run environment
 source /etc/profile.d/modules.sh
@@ -57,7 +58,7 @@ do
     # calculate the number of nodes required for this batch submission
     nnum=$(( ($pnum+36-1)/36 ))
 
-    sed "s&%np%&$pnum&g; s&%nn%&$nnum&g; s&%nrun%&$nrun&g; s&%EXECDIR%&$EXECDIR&g; s&%grid1%&$GRID1&g" $SCRIPTDIR/MOAB_eval_run_pbs > $SCRIPTDIR/MOAB_eval_run_pbs_$pnum
+    sed "s&%np%&$pnum&g; s&%nn%&$nnum&g; s&%nrun%&$nrun&g; s&%EXECDIR%&$EXECDIR&g; s&%grid1%&$GRID1&g; s&%grid1size%&$GRID1size&g" $SCRIPTDIR/MOAB_eval_run_pbs > $SCRIPTDIR/MOAB_eval_run_pbs_$pnum
 
     for ((ind=1; ind<$nrun+1; ++ind))
     do

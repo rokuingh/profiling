@@ -10,6 +10,10 @@
 ! #define profile_mesh_redist
 ! #define profile_mesh_destroy
 
+! numNode = 6480 ! ll80x80_grid.esmf.nc
+! numNode = 1639680  ! ll1280x1280_grid.esmf.nc
+
+
 program MOAB_eval_redist
 
   use ESMF
@@ -18,12 +22,40 @@ program MOAB_eval_redist
   integer :: localrc
   integer :: localPet, petCount
   type(ESMF_VM) :: vm
+  character(ESMF_MAXPATHLEN) :: file
+  character(ESMF_MAXPATHLEN) :: numNodeChar
+  integer :: numNode
+  integer :: numargs
 
    ! Init ESMF
   call ESMF_Initialize(rc=localrc, logappendflag=.false.)
   if (localrc /=ESMF_SUCCESS) then
      stop
   endif
+
+  ! Error check number of command line args
+  call ESMF_UtilGetArgC(count=numargs, rc=localrc)
+  if (localrc /=ESMF_SUCCESS) then
+    stop
+  endif
+  if (numargs .ne. 2) then
+     write(*,*) "ERROR: MOAB_eval Should be run with 2 arguments"
+     stop
+  endif
+
+  ! Get filenames
+    call ESMF_UtilGetArg(1, argvalue=file, rc=localrc)
+  if (localrc /=ESMF_SUCCESS) then
+    stop
+  endif
+
+  ! Get filenames
+    call ESMF_UtilGetArg(2, argvalue=numNodeChar, rc=localrc)
+  if (localrc /=ESMF_SUCCESS) then
+    stop
+  endif
+
+  read (numNodeChar,'(I10)') numNode
 
   ! get pet info
    call ESMF_VMGetGlobal(vm, rc=localrc)
@@ -40,12 +72,14 @@ program MOAB_eval_redist
   if (localPet .eq. 0) then
      write(*,*)
      write(*,*) "NUMBER OF PROCS = ",petCount
-     write(*,*)
+     write(*,*) "GRID FILE = ",trim(file)
+     write(*,*) "numNode = ", numNode
   endif
 
   !!!!!!!!!!!!!!! Time Native Mesh !!!!!!!!!!!!
   if (localPet .eq. 0) then
-     write(*,*) "======= Native ESMF Mesh ======="
+     write(*,*)
+     write(*,*) "Running Native Mesh ..."
   endif
   
   ! Make sure  MOAB is off
@@ -56,7 +90,7 @@ program MOAB_eval_redist
   
   
   ! Regridding using ESMF native Mesh
-  call profile_mesh_redist(moab=.false., rc=localrc)
+  call profile_mesh_redist(.false., file, numNode, rc=localrc)
    if (localrc /=ESMF_SUCCESS) then
      write(*,*) "ERROR IN REDIST SUBROUTINE!"
      stop
@@ -65,8 +99,7 @@ program MOAB_eval_redist
   !!!!!!!!!!!!!!! Time MOAB Mesh !!!!!!!!!!!!
   if (localPet .eq. 0) then
      write(*,*)
-     write(*,*)
-     write(*,*) "======= MOAB Mesh ======="
+     write(*,*) "Running MBMesh ..."
   endif
   
   ! Turn on MOAB
@@ -76,12 +109,17 @@ program MOAB_eval_redist
   endif
   
   ! Regridding using MOAB Mesh
-  call profile_mesh_redist(moab=.true., rc=localrc)
+  call profile_mesh_redist(.true., file, numNode, rc=localrc)
    if (localrc /=ESMF_SUCCESS) then
      write(*,*) "ERROR IN REDIST SUBROUTINE!"
-          stop
+     stop
     endif
   
+  if (localPet .eq. 0) then
+     write(*,*)
+     write(*,*) "Success"
+  endif
+
   ! Finalize ESMF
   call ESMF_Finalize(rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
@@ -91,9 +129,11 @@ program MOAB_eval_redist
   contains
 
 
- subroutine profile_mesh_redist(moab, rc)
+ subroutine profile_mesh_redist(moab, file, numNode, rc)
   logical, intent(in) :: moab
-  integer, intent(out)  :: rc
+  character(*), intent(in) :: file
+  integer, intent(in) :: numNode
+  integer, intent(out), optional :: rc
 
   integer :: localrc
 
@@ -106,12 +146,6 @@ program MOAB_eval_redist
   integer, allocatable :: ec(:)
   integer, allocatable :: sil(:)
   integer, allocatable :: asil(:)
-
-  !!! grid sizes are hardcoded, just easier this way
-  character(len=50), parameter :: srcfile = "data/ll80x80_grid.esmf.nc"
-  integer, parameter :: numNode = 6480 ! ll80x80_grid.esmf.nc
-  ! character(len=50), parameter :: srcfile = "data/ll1280x1280_grid.esmf.nc"
-  ! integer, parameter :: numNode = 1639680  ! ll1280x1280_grid.esmf.nc
 
   integer :: minI, maxI, nn
 
@@ -187,7 +221,7 @@ program MOAB_eval_redist
   call ESMF_VMLogMemInfo("before "//NM//" create")
 #endif
 
-  srcMesh=ESMF_MeshCreate(filename=srcfile, fileformat=ESMF_FILEFORMAT_ESMFMESH, &
+  srcMesh=ESMF_MeshCreate(filename=file, fileformat=ESMF_FILEFORMAT_ESMFMESH, &
                           nodalDistgrid=distgrid1, rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
     rc=ESMF_FAILURE
