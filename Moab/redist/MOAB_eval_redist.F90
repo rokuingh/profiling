@@ -6,9 +6,8 @@
 ! NASA Goddard Space Flight Center.
 ! Licensed under the University of Illinois-NCSA License.
 
-! #define profile_mesh_create
-! #define profile_mesh_redist
-! #define profile_mesh_destroy
+! #define profile_meshcreate
+! #define profile_meshredist
 
 ! numNode = 6480 ! ll80x80_grid.esmf.nc
 ! numNode = 1639680  ! ll1280x1280_grid.esmf.nc
@@ -215,10 +214,10 @@ program MOAB_eval_redist
   ! print *, localPet, "# distgrid2 minI = ", minval(asil), " maxI = ", maxval(asil)
   deallocate(asil)
 
-#define profile_mesh_create
-#ifdef profile_mesh_create
-  call ESMF_TraceRegionEnter(NM//" Create")
-  call ESMF_VMLogMemInfo("before "//NM//" create")
+#define profile_meshcreate
+#ifdef profile_meshcreate
+  call ESMF_TraceRegionEnter(trim(NM)//" ESMF_MeshCreate()")
+  call ESMF_VMLogMemInfo("before "//trim(NM)//" ESMF_MeshCreate()")
 #endif
 
   srcMesh=ESMF_MeshCreate(filename=file, fileformat=ESMF_FILEFORMAT_ESMFMESH, &
@@ -227,6 +226,11 @@ program MOAB_eval_redist
     rc=ESMF_FAILURE
     return
   endif
+
+#ifdef profile_meshcreate
+  call ESMF_VMLogMemInfo("after "//trim(NM)//" ESMF_MeshCreate()")
+  call ESMF_TraceRegionExit(trim(NM)//" ESMF_MeshCreate()")
+#endif
 
 !   call ESMF_MeshGet(srcMesh, nodalDistgrid=distgrid1, rc=localrc)
 !   if (localrc /=ESMF_SUCCESS) then
@@ -250,18 +254,12 @@ program MOAB_eval_redist
 ! 
 ! print *, localPet, "# distgrid actual minI = ", minval(sil), " maxI = ", maxval(sil)
 
-#ifdef profile_mesh_create
-  call ESMF_VMLogMemInfo("after "//NM//" create")
-  call ESMF_TraceRegionExit(NM//" Create")
-#endif
-
 ! remove the complete redist, as sufficient redist with create to demonstrate timing profile issue
-#if 0
 
-#define profile_mesh_redist
+! #define profile_mesh_redist
 #ifdef profile_mesh_redist
-  call ESMF_TraceRegionEnter(NM//" Redist")
-  call ESMF_VMLogMemInfo("before "//NM//" redist")
+  call ESMF_TraceRegionEnter(trim(NM)//" ESMF_MeshCreate(Redist)")
+  call ESMF_VMLogMemInfo("before "//trim(NM)//" ESMF_MeshCreate(Redist)")
 
   redistMesh = ESMF_MeshCreate(srcMesh, nodalDistgrid=distgrid2, rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
@@ -270,15 +268,10 @@ program MOAB_eval_redist
   endif
 
 
-  call ESMF_VMLogMemInfo("after "//NM//" redist")
-  call ESMF_TraceRegionExit(NM//" Redist")
-#endif
+  call ESMF_VMLogMemInfo("after "//trim(NM)//" ESMF_MeshCreate(Redist)")
+  call ESMF_TraceRegionExit(trim(NM)//" ESMF_MeshCreate(Redist)")
 #endif
 
-#ifdef profile_mesh_destroy
-  call ESMF_TraceRegionEnter(NM//" Destroy")
-  call ESMF_VMLogMemInfo("before "//NM//" destroy")
-#endif
 
   ! Free the meshes
   call ESMF_MeshDestroy(srcMesh, rc=localrc)
@@ -286,11 +279,6 @@ program MOAB_eval_redist
     rc=ESMF_FAILURE
     return
   endif
-
-#ifdef profile_mesh_destroy
-  call ESMF_VMLogMemInfo("after "//NM//" destroy")
-  call ESMF_TraceRegionExit(NM//" Destroy")
-#endif
 
 #endif
 ! ESMF_MOAB
