@@ -21,6 +21,6 @@ export ESMF_RUNTIME_PROFILE_OUTPUT=SUMMARY
 for ((ind=1; ind<%nrun%+1; ++ind))
 do
     cd %EXECDIR%/%np%-$ind
-    mpiexec_mpt -n %np% %EXECDIR%/%np%-$ind/MOAB_eval_regrid %grid1% %grid1size% > %EXECDIR%/%np%-$ind/MOAB_eval_regrid%np%-$ind.out
-    echo "mpiexec_mpt -n %np% %EXECDIR%/%np%-$ind/MOAB_eval_regrid %grid1% %grid1size% > %EXECDIR%/%np%-$ind/MOAB_eval_regrid%np%-$ind.out"
+    mpiexec_mpt -n %np% %EXECDIR%/%np%-$ind/MOAB_eval_regrid %grid1% %grid2% > %EXECDIR%/%np%-$ind/MOAB_eval_regrid%np%-$ind.out
+    echo "mpiexec_mpt -n %np% %EXECDIR%/%np%-$ind/MOAB_eval_regrid %grid1% %grid2e% > %EXECDIR%/%np%-$ind/MOAB_eval_regrid%np%-$ind.out"
 done
