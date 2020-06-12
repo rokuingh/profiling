@@ -179,13 +179,19 @@ program MOAB_eval_regrid
 
   call ESMF_ArraySpecSet(as, 1, ESMF_TYPEKIND_R8, rc=rc)
 
-  srcField=ESMF_FieldCreate(srcMesh, as, meshloc=ESMF_MESHLOC_ELEMENT, rc=localrc)
+  ! conservative
+  ! srcField=ESMF_FieldCreate(srcMesh, as, meshloc=ESMF_MESHLOC_ELEMENT, rc=localrc)
+  ! bilinear
+  srcField=ESMF_FieldCreate(srcMesh, as, meshloc=ESMF_MESHLOC_NODE, rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
     rc=localrc
     return
   endif
 
-  dstField=ESMF_FieldCreate(dstMesh, as, meshloc=ESMF_MESHLOC_ELEMENT, rc=localrc)
+  ! conservative
+  ! dstField=ESMF_FieldCreate(dstMesh, as, meshloc=ESMF_MESHLOC_ELEMENT, rc=localrc)
+  ! bilinear
+  dstField=ESMF_FieldCreate(dstMesh, as, meshloc=ESMF_MESHLOC_NODE, rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
     rc=localrc
     return
@@ -198,7 +204,7 @@ program MOAB_eval_regrid
 #endif
 
   call ESMF_FieldRegridStore(srcField, dstField=dstField, routehandle=rh, &
-                             regridmethod=ESMF_REGRIDMETHOD_CONSERVE, rc=localrc)
+                             regridmethod=ESMF_REGRIDMETHOD_BILINEAR, rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
     rc=localrc
     return
