@@ -1,0 +1,26 @@
+#!/bin/bash
+#
+#PBS -N MOAB_eval%np%
+#PBS -A P93300606
+#PBS -l walltime=00:30:00
+#PBS -q economy
+#PBS -l select=%nn%:ncpus=36:mpiprocs=36
+#PBS -j oe
+#PBS -m ae
+#PBS -o MOAB_eval%np%.out
+#PBS -e MOAB_eval%np%.err
+
+# reload the run environment again, just in case
+source /etc/profile.d/modules.sh
+module purge
+module load ncarenv/1.3 intel/18.0.5 ncarcompilers/0.5.0 mpt/2.19 netcdf/4.7.1
+
+export ESMF_RUNTIME_PROFILE=ON
+export ESMF_RUNTIME_PROFILE_OUTPUT=SUMMARY
+
+for ((ind=1; ind<%nrun%+1; ++ind))
+do
+    cd %EXECDIR%/%np%-$ind
+    mpiexec_mpt -n %np% %EXECDIR%/%np%-$ind/MOAB_eval_regrid %grid1% %grid1size% > %EXECDIR%/%np%-$ind/MOAB_eval_regrid%np%-$ind.out
+    echo "mpiexec_mpt -n %np% %EXECDIR%/%np%-$ind/MOAB_eval_regrid %grid1% %grid1size% > %EXECDIR%/%np%-$ind/MOAB_eval_regrid%np%-$ind.out"
+done
