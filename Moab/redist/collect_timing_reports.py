@@ -37,7 +37,7 @@ for num_run in range(1,runs+1):
                         nl = newmethod+"    "+str(num_procs)+rest
                     out.write(nl)
             out.close()
-    
+   
             f_in = pd.read_csv(rftmp, sep=r"\s{2,}", index_col=False, engine='python')
     
             # delete unwanted columns
@@ -51,18 +51,7 @@ for num_run in range(1,runs+1):
             f_out = f_out.T
     
             f_out.rename(index={"Mean (s)":str(num_procs)}, inplace=True)
-    
-            keep_col = ["NVMesh Create", "MBMesh Create", 
-                        "mbmesh ddir processing", "mbmesh element communication", "moab communication", 
-                        "mbmesh post processing", "mbmesh ddir initialization", "mbmesh split id preprocessing", 
-                        "mbmesh split id postprocessing",
-                        #
-                        "nvmesh post processing", "nvmesh communication", "nvmesh ddir processing 2", 
-                        "nvmesh ddir processing", "nvmesh ddir initialization", "nvmesh split id preprocessing", 
-                        "nvmesh split id postprocessing",
-                        ]
-            f_out = f_out[keep_col]
-    
+   
             # write new csv
             if not os.path.isfile(timeoutfilename):
                 f_out.to_csv(timeoutfilename)
