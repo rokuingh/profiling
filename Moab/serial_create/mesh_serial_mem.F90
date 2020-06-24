@@ -50,7 +50,7 @@ program MOAB_eval
     write(*,*) ""
   endif
 
-  !!!!!!!!!!!!!!! Time Native Mesh !!!!!!!!!!!!
+  !!!!!!!!!!!!!!! Time NativeMesh !!!!!!!!!!!!
   write(*,*) "ESMF MESH"
   do i=1,8
     write(*,*) trim(files(i))

@@ -1,0 +1,54 @@
+#!/bin/bash
+#PBS -N esmfbuild
+#PBS -A P93300606
+#PBS -l walltime=01:00:00
+#PBS -q economy
+#PBS -j oe
+#PBS -m abe
+#PBS -M ryan.okuinghttons@noaa.gov
+#PBS -l select=1:ncpus=36:mpiprocs=36
+
+set -e
+
+testcase=%testcase%
+ESMFDIR=%esmfdir%
+
+cd $ESMFDIR
+
+#cheyenne# module purge; module load ncarenv/1.3 intel/18.0.5 ncarcompilers/0.5.0 mpt/2.19 netcdf/4.7.1; 
+#cheyenne# export ESMF_COMPILER=intel; export ESMF_COMM=mpt; export ESMF_BOPT=O; export ESMF_OPTLEVEL=2; unset ESMF_TESTEXHAUSTIVE; export ESMF_NETCDF=split; export ESMF_NETCDF_INCLUDE=/glade/u/apps/ch/opt/netcdf/4.7.1/intel/18.0.5/include; export ESMF_NETCDF_LIBPATH=/glade/u/apps/ch/opt/netcdf/4.7.1/intel/18.0.5/lib;
+
+#test# export ESMF_COMPILER=gfortran; export ESMF_COMM=openmpi; export ESMF_BOPT=O; export ESMF_OPTLEVEL=2; unset ESMF_TESTEXHAUSTIVE; export ESMF_NETCDF=split; export ESMF_NETCDF_INCLUDE=/usr/local/include; export ESMF_NETCDF_LIBPATH=/usr/local/lib;
+
+unset ESMF_CXXCOMPILEOPTS; unset ESMF_F90COMPILEOPTS;
+
+if [[ $testcase == "create" ]]; then
+    export ESMF_CXXCOMPILEOPTS=-DESMF_PROFILE_MESHCREATE
+    export ESMF_F90COMPILEOPTS=-DESMF_PROFILE_MESHCREATE
+elif [[ $testcase == "dual" ]]; then
+    export ESMF_CXXCOMPILEOPTS=-DESMF_PROFILE_DUALMESH
+    export ESMF_F90COMPILEOPTS=-DESMF_PROFILE_DUALMESH
+elif [[ $testcase == "redist" ]]; then
+    export ESMF_CXXCOMPILEOPTS=-DESMF_PROFILE_MESHREDIST
+    export ESMF_F90COMPILEOPTS=-DESMF_PROFILE_MESHREDIST
+elif [[ $testcase == "regrid" ]]; then
+    export ESMF_CXXCOMPILEOPTS=-DESMF_PROFILE_REGRID
+    export ESMF_F90COMPILEOPTS=-DESMF_PROFILE_REGRID
+elif [[ $testcase == "rendezvous" ]]; then
+    export ESMF_CXXCOMPILEOPTS=-DESMF_PROFILE_RENDEZVOUS
+    export ESMF_F90COMPILEOPTS=-DESMF_PROFILE_RENDEZVOUS
+else
+  echo 'USAGE: qsub -F "testcase=<testcase[create,dual,redist,regrid,rendezvous]>" esmfbuild.pbs'
+  exit 1
+fi
+
+export ESMF_INSTALL_PREFIX=$ESMFDIR/$testcase
+
+### Build and install ESMF
+make -j36 distclean &> /dev/null
+make -j36 &> mbmesh-$testcase-intelmpt-build.out
+make install &> mbmesh-$testcase-intelmpt-install.out
+
+# write the ESMFMKFILE to esmfmkfile.out for use by executable build script
+rm -f esmfmkfile.out
+echo "$ESMF_INSTALL_PREFIX/lib/lib$ESMF_BOPT/Linux.$ESMF_COMPILER.64.$ESMF_COMM.default/esmf.mk" > esmfmkfile.out

@@ -15,3 +15,4 @@ PET*.ESMF_LogFile
 /log*
 MOAB_eval
 runs
+__pycache__

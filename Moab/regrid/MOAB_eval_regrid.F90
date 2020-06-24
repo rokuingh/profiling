@@ -69,10 +69,10 @@ program MOAB_eval_regrid
      write(*,*) "DST FILE = ",trim(dstfile)
   endif
 
-  !!!!!!!!!!!!!!! Time Native Mesh !!!!!!!!!!!!
+  !!!!!!!!!!!!!!! Time NativeMesh !!!!!!!!!!!!
   if (localPet .eq. 0) then
      write(*,*)
-     write(*,*) "Running Native Mesh ..."
+     write(*,*) "Running NativeMesh ..."
   endif
   
   ! Make sure  MOAB is off
@@ -159,7 +159,7 @@ program MOAB_eval_regrid
     return
   endif
 
-  NM = "NVMesh"
+  NM = "NativeMesh"
   if (moab) then
     NM = "MBMesh"
   endif

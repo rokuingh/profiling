@@ -1,0 +1,30 @@
+#!/bin/bash
+#
+#PBS -N runProfile%np%
+#PBS -A P93300606
+#PBS -l walltime=00:30:00
+#PBS -q economy
+#PBS -l select=%nn%:ncpus=36:mpiprocs=36
+#PBS -j oe
+#PBS -m ae
+#PBS -o runProfile%np%.out
+#PBS -e runProfile%np%.err
+
+set -e
+
+# load the run environment
+#cheyenne# source /etc/profile.d/modules.sh
+#cheyenne# module purge
+#cheyenne# module load ncarenv/1.3 intel/18.0.5 ncarcompilers/0.5.0 mpt/2.19 netcdf/4.7.1
+
+export ESMF_RUNTIME_PROFILE=ON
+export ESMF_RUNTIME_PROFILE_OUTPUT=SUMMARY
+
+for ((ind=1; ind<%nrun%+1; ++ind))
+do
+    cd %EXECDIR%/%np%-$ind
+    #cheyenne# mpiexec_mpt -n %np% %EXECDIR%/%np%-$ind/MOAB_eval %grid1% %grid2% > %EXECDIR%/%np%-$ind/MOAB_eval%np%-$ind.out
+    #test# mpirun -n %np% %EXECDIR%/%np%-$ind/MOAB_eval %grid1% %grid2% > %EXECDIR%/%np%-$ind/MOAB_eval%np%-$ind.out
+    echo "mpiexec_mpt -n %np% %EXECDIR%/%np%-$ind/MOAB_eval %grid1% %grid2% > %EXECDIR%/%np%-$ind/MOAB_eval%np%-$ind.out"
+done
+

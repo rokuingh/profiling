@@ -1,0 +1,107 @@
+#!/usr/bin/python
+# coding: utf-8
+#
+# profiling workflow
+# Usage: python workflow -np <num_cores> -runs <num_runs> -testcase  <testcase|[create,dual,redist,regrid,rendezvous]> --esmfmkfile=<ESMFMKFILE>
+#
+import sys, os
+import numpy as np
+import argparse
+import subprocess
+from time import localtime, strftime
+
+def parseArguments():
+    # Create argument parser
+    parser = argparse.ArgumentParser()
+
+    # Positional mandatory arguments
+    parser.add_argument("-np", type=int, help="Number of processing cores")
+    parser.add_argument("-runs", type=int, help="Number of runs")
+    parser.add_argument("-testcase", type=str, help="Test case [create,dual,redist,regrid,rendezvous]")
+
+    # Optional arguments
+    parser.add_argument("--esmfmkfile", type=str, default="", help="Path to esmf.mk, will build ESMF if not supplied.")
+    parser.add_argument("--cheyenne", type=str, default="", help="Set to 'on' to use cheyenne specific environment.")
+
+    # Print version
+    parser.add_argument("--version", action="version", version='%(prog)s - Version 0.1')
+
+    # Parse arguments
+    args = parser.parse_args()
+
+    return args
+
+if __name__ == '__main__':
+    # Parse the arguments
+    args = parseArguments()
+
+    # Raw print arguments
+    print("\nRunning 'workflow.py' with following input parameter values: ")
+    for a in args.__dict__:
+        print(str(a) + ": " + str(args.__dict__[a]))
+
+    if (args.__dict__["np"] == None):
+      raise KeyError("Then number of processors must be specified. Usage: 'python workflow -np <NP> -runs <RUNS> -testcase <TESTCASE [create,dual,redist,regrid,rendezvous] --esmfmkfile <ESMFMKFILE> --cheyenne <None|ON>'")
+    elif (args.__dict__["runs"] == None):
+      raise KeyError("Then number of runs must be specified. Usage: 'python workflow -np <NP> -runs <RUNS> -testcase <TESTCASE [create,dual,redist,regrid,rendezvous] --esmfmkfile <ESMFMKFILE> --cheyenne <None|ON>'")
+    elif (args.__dict__["testcase"] == None):
+      raise KeyError("Then testcase must be specified. Usage: 'python workflow -np <NP> -runs <RUNS> -testcase <TESTCASE [create,dual,redist,regrid,rendezvous] --esmfmkfile <ESMFMKFILE> --cheyenne <None|ON>'")
+
+    np = args.__dict__["np"]
+    runs = args.__dict__["runs"]
+    testcase = args.__dict__["testcase"]
+    esmfmkfile = args.__dict__["esmfmkfile"]
+    if (args.__dict__["cheyenne"] == ""): cheyenne = False
+    else: cheyenne = True
+
+    # Parameters
+    ESMFDIR="/glade/work/rokuingh/sandbox/esmf"
+    RUNDIR="/glade/work/rokuingh/MBMeshPerformanceResults"
+    SRCDIR="/glade/work/rokuingh/sandbox/profiling/Moab"
+    GRID1=os.path.join(SRCDIR,"data", "ll1280x1280_grid.esmf.nc")
+    GRID2=os.path.join(SRCDIR,"data", "ll1280x1280_grid.esmf.nc")
+    if not cheyenne:
+        ESMFDIR="/home/ryan/Dropbox/sandbox/esmf"
+        RUNDIR="/home/ryan/MBMeshPerformanceResults"
+        SRCDIR="/home/ryan/Dropbox/sandbox/profiling/Moab"
+        GRID1=os.path.join(SRCDIR,"data", "ll80x80_grid.esmf.nc")
+        GRID2=os.path.join(SRCDIR,"data", "ll80x80_grid.esmf.nc")
+
+    procs=(36, 72, 144, 288, 576, 1152, 2304, 4608)
+
+    # 1 initialize: build and install esmf and tests with appropriate env vars
+    try:
+        import initTest
+        ESMFMKFILE = initTest.build_esmf(ESMFDIR, SRCDIR, testcase, esmfmkfile=esmfmkfile, cheyenne=cheyenne)
+        initTest.build_test(SRCDIR, ESMFMKFILE, testcase)
+    except:
+        raise RuntimeError("Error building the tests.")
+
+    # 2 run: submit the test runs
+    try:
+        import runTest
+        EXECDIR = runTest.setup(SRCDIR, RUNDIR, np, runs, testcase, procs, GRID1, GRID2, cheyenne=cheyenne)
+        runTest.run(procs, np, EXECDIR, cheyenne=cheyenne)
+    except:
+        raise RuntimeError("Error submitting the tests.")
+
+    # 3 post: collect the results into csv files
+    try:
+        import collectResults
+        print ("\nCollect test results (<20 minutes):", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
+
+        timingfile = collectResults.timing(EXECDIR, np, runs, testcase, procs, cheyenne=cheyenne)
+        memoryfile = collectResults.memory(EXECDIR, np, runs, testcase, procs, cheyenne=cheyenne)
+
+        print ("Results are in the following files:\n", timingfile, "\n", memoryfile)
+    except:
+        raise RuntimeError("Error collecting the test results.")
+
+# !! separate memory files into blocks for rss, hwm, tas
+
+# # 4 report: manual, scp, copy and paste the files into drive spreadsheet and make the appropriate graphs
+# 
+# # scp rokuingh@cheyenne.ucar.edu:/glade/work/rokuingh/MBMeshPerformanceResults/runs/<num>/mbmesh_$testcase_timing_profile_results.csv .
+# # more mbmesh_$testcase_timing_profile_results.csv | xclip -sel clip
+# # scp rokuingh@cheyenne.ucar.edu:/glade/work/rokuingh/MBMeshPerformanceResults/runs/<num>/mbmesh_$testcase_memory_profile_results.csv .
+# # more mbmesh_$testcase_memory_profile_results.csv | xclip -sel clip

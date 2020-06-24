@@ -43,18 +43,18 @@ program MOAB_eval_redist
   endif
 
   ! Get filenames
-    call ESMF_UtilGetArg(1, argvalue=file, rc=localrc)
+  call ESMF_UtilGetArg(1, argvalue=file, rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
     stop
   endif
 
-  ! Get filenames
-    call ESMF_UtilGetArg(2, argvalue=numNodeChar, rc=localrc)
-  if (localrc /=ESMF_SUCCESS) then
-    stop
+  if (index(trim(file), "ll80x80_grid.esmf.nc") /= 0) then
+    numNode = 6480
+  elseif (index(trim(file), "ll1280x1280_grid.esmf.nc") /= 0) then
+    numNode = 1639680
+  else
+    call ESMF_Finalize(endflag=ESMF_END_ABORT)
   endif
-
-  read (numNodeChar,'(I10)') numNode
 
   ! get pet info
    call ESMF_VMGetGlobal(vm, rc=localrc)
@@ -75,14 +75,14 @@ program MOAB_eval_redist
      write(*,*) "numNode = ", numNode
   endif
 
-  !!!!!!!!!!!!!!! Time Native Mesh !!!!!!!!!!!!
+  !!!!!!!!!!!!!!! Time NativeMesh !!!!!!!!!!!!
   if (localPet .eq. 0) then
      write(*,*)
-     write(*,*) "Running Native Mesh ..."
+     write(*,*) "Running NativeMesh ..."
   endif
   
   ! Make sure  MOAB is off
-    call ESMF_MeshSetMOAB(.false., rc=localrc)
+  call ESMF_MeshSetMOAB(.false., rc=localrc)
   if (localrc .ne. ESMF_SUCCESS) then
      stop
   endif
@@ -170,7 +170,7 @@ program MOAB_eval_redist
     return
   endif
 
-  NM = "NVMesh"
+  NM = "NativeMesh"
   if (moab) then
     NM = "MBMesh"
   endif
@@ -214,7 +214,6 @@ program MOAB_eval_redist
   ! print *, localPet, "# distgrid2 minI = ", minval(asil), " maxI = ", maxval(asil)
   deallocate(asil)
 
-#define profile_meshcreate
 #ifdef profile_meshcreate
   call ESMF_TraceRegionEnter(trim(NM)//" ESMF_MeshCreate()")
   call ESMF_VMLogMemInfo("before "//trim(NM)//" ESMF_MeshCreate()")
@@ -232,31 +231,31 @@ program MOAB_eval_redist
   call ESMF_TraceRegionExit(trim(NM)//" ESMF_MeshCreate()")
 #endif
 
-!   call ESMF_MeshGet(srcMesh, nodalDistgrid=distgrid1, rc=localrc)
-!   if (localrc /=ESMF_SUCCESS) then
-!     rc=ESMF_FAILURE
-!     return
-!   endif
-! 
-!   allocate(ec(4))
-!   call ESMF_DistGridGet(distgrid1, elementCountPDe=ec, rc=localrc)
-!   if (localrc /=ESMF_SUCCESS) then
-!     rc=ESMF_FAILURE
-!     return
-!   endif
-! 
-!   allocate(sil(ec(localPet+1)))
-!   call ESMF_DistGridGet(distgrid1, 0, seqIndexList=sil, rc=localrc)
-!   if (localrc /=ESMF_SUCCESS) then
-!     rc=ESMF_FAILURE
-!     return
-!   endif
-! 
+  call ESMF_MeshGet(srcMesh, nodalDistgrid=distgrid1, rc=localrc)
+  if (localrc /=ESMF_SUCCESS) then
+    rc=ESMF_FAILURE
+    return
+  endif
+
+  allocate(ec(4))
+  call ESMF_DistGridGet(distgrid1, elementCountPDe=ec, rc=localrc)
+  if (localrc /=ESMF_SUCCESS) then
+    rc=ESMF_FAILURE
+    return
+  endif
+
+  allocate(sil(ec(localPet+1)))
+  call ESMF_DistGridGet(distgrid1, 0, seqIndexList=sil, rc=localrc)
+  if (localrc /=ESMF_SUCCESS) then
+    rc=ESMF_FAILURE
+    return
+  endif
+
 ! print *, localPet, "# distgrid actual minI = ", minval(sil), " maxI = ", maxval(sil)
 
 ! remove the complete redist, as sufficient redist with create to demonstrate timing profile issue
 
-! #define profile_mesh_redist
+#define profile_mesh_redist
 #ifdef profile_mesh_redist
   call ESMF_TraceRegionEnter(trim(NM)//" ESMF_MeshCreate(Redist)")
   call ESMF_VMLogMemInfo("before "//trim(NM)//" ESMF_MeshCreate(Redist)")
