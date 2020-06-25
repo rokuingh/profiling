@@ -3,7 +3,7 @@
 #
 
 import os, re
-from subprocess import Popen
+from subprocess import Popen, check_output
 from shutil import copy2
 from time import localtime, strftime
 from math import floor
@@ -96,7 +96,7 @@ def setup(SRCDIR, RUNDIR, np, runs, testcase, procs, GRID1, GRID2, cheyenne=Fals
     return EXECDIR
 
 
-def run(procs, np, EXECDIR, cheyenne=False):
+def run(procs, np, SRCDIR, EXECDIR, cheyenne=False):
     try:
         print ("\nSubmit the test runs (<15 minutes):", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
 
@@ -110,10 +110,10 @@ def run(procs, np, EXECDIR, cheyenne=False):
                 if cheyenne:
                     # don't block these jobs, chaser will depend on them to finish successfully before starting
                     qsub_command = ["qsub", os.path.join(EXECDIR, "runProfile"+str(pnum)+".pbs")]
-                    tmp = Popen(qsub_command)
-                    streamdata = tmp.communicate()[0]
-                    rc = tmp.returncode
-                    job_ids.append(rc)
+                    tmp = check_output(qsub_command).decode('UTF-8')
+                    job_id = tmp.split("\n")[0]
+                    job_ids.append(job_id)
+                    print(job_id)
                 else:
                     tmp = Popen(["bash", os.path.join(EXECDIR, "runProfile"+str(pnum)+".pbs")])
                     streamdata = tmp.communicate()[0]
@@ -124,8 +124,10 @@ def run(procs, np, EXECDIR, cheyenne=False):
 
         if cheyenne:
             # chaser job will only start after all previous jobs have completed, indicates that result collection may continue
-            qsub_command = ["qsub", "-W depend=afterok", [id for id in job_ids], os.path.join(EXECDIR, "chaser.pbs")]
-            tmp = Popen(["bash", os.path.join(EXECDIR, "runProfile"+str(pnum)+".pbs")])
+            colon = ":"
+            job_s_ids = [str(i) for i in job_ids]
+            chaser_command = ["qsub", "-W block=true,depend=afterok:"+colon.join(job_s_ids), os.path.join(SRCDIR, "chaser.pbs")]
+            tmp = Popen(chaser_command)
             streamdata = tmp.communicate()[0]
             rc = tmp.returncode
             

@@ -89,7 +89,7 @@ if __name__ == '__main__':
     try:
         import runTest
         EXECDIR = runTest.setup(SRCDIR, RUNDIR, np, runs, testcase, procs, GRID1, GRID2, cheyenne=cheyenne)
-        runTest.run(procs, np, EXECDIR, cheyenne=cheyenne)
+        runTest.run(procs, np, SRCDIR, EXECDIR, cheyenne=cheyenne)
     except:
         raise RuntimeError("Error submitting the tests.")
 
