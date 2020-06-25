@@ -13,6 +13,3 @@ PET*.ESMF_LogFile
 *.nc
 *.o
 /log*
-MOAB_eval
-runs
-__pycache__
