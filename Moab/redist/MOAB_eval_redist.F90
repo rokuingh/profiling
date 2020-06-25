@@ -139,11 +139,9 @@ program MOAB_eval_redist
   character(12) :: NM
   type(ESMF_VM) :: vm
   type(ESMF_Mesh) :: srcMesh, redistMesh
-  type(ESMF_DistGrid) :: distgrid1, distgrid2, distgrid3
+  type(ESMF_DistGrid) :: distgrid1, distgrid2
 
   integer :: i
-  integer, allocatable :: ec(:)
-  integer, allocatable :: sil(:)
   integer, allocatable :: asil(:)
 
   integer :: minI, maxI, nn
@@ -231,29 +229,6 @@ program MOAB_eval_redist
   call ESMF_TraceRegionExit(trim(NM)//" ESMF_MeshCreate()")
 #endif
 
-  call ESMF_MeshGet(srcMesh, nodalDistgrid=distgrid1, rc=localrc)
-  if (localrc /=ESMF_SUCCESS) then
-    rc=ESMF_FAILURE
-    return
-  endif
-
-  allocate(ec(4))
-  call ESMF_DistGridGet(distgrid1, elementCountPDe=ec, rc=localrc)
-  if (localrc /=ESMF_SUCCESS) then
-    rc=ESMF_FAILURE
-    return
-  endif
-
-  allocate(sil(ec(localPet+1)))
-  call ESMF_DistGridGet(distgrid1, 0, seqIndexList=sil, rc=localrc)
-  if (localrc /=ESMF_SUCCESS) then
-    rc=ESMF_FAILURE
-    return
-  endif
-
-! print *, localPet, "# distgrid actual minI = ", minval(sil), " maxI = ", maxval(sil)
-
-! remove the complete redist, as sufficient redist with create to demonstrate timing profile issue
 
 #define profile_mesh_redist
 #ifdef profile_mesh_redist
@@ -274,6 +249,25 @@ program MOAB_eval_redist
 
   ! Free the meshes
   call ESMF_MeshDestroy(srcMesh, rc=localrc)
+  if (localrc /=ESMF_SUCCESS) then
+    rc=ESMF_FAILURE
+    return
+  endif
+
+  call ESMF_MeshDestroy(redistMesh, rc=localrc)
+  if (localrc /=ESMF_SUCCESS) then
+    rc=ESMF_FAILURE
+    return
+  endif
+
+  ! Free the distgrids
+  call ESMF_DistGridDestroy(distgrid1, rc=localrc)
+  if (localrc /=ESMF_SUCCESS) then
+    rc=ESMF_FAILURE
+    return
+  endif
+
+  call ESMF_DistGridDestroy(distgrid2, rc=localrc)
   if (localrc /=ESMF_SUCCESS) then
     rc=ESMF_FAILURE
     return

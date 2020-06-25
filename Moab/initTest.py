@@ -34,7 +34,7 @@ def build_esmf(ESMFDIR, SRCDIR, testcase, esmfmkfile="", cheyenne=False):
             with open(os.path.join(ESMFDIR, "buildESMF"+testcase+".pbs"), "w") as result:
                 result.write(new_text)
 
-            qsub_command = ["qsub -sync y", os.path.join(ESMFDIR, "buildESMF"+testcase+".pbs")]
+            qsub_command = ["qsub", "-W block=true", os.path.join(ESMFDIR, "buildESMF"+testcase+".pbs")]
 
             rc = 0
             if not cheyenne:
@@ -42,7 +42,7 @@ def build_esmf(ESMFDIR, SRCDIR, testcase, esmfmkfile="", cheyenne=False):
                 streamdata = tmp.communicate()[0]
                 rc = tmp.returncode
             else:  
-                tmp = Popen([qsub_command])
+                tmp = Popen(qsub_command)
                 streamdata = tmp.communicate()[0]
                 rc = tmp.returncode
 

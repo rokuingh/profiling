@@ -105,7 +105,7 @@ def run(procs, np, EXECDIR, cheyenne=False):
         for pnum in procs:
             if pnum <= np:
 
-                qsub_command = ["qsub -sync y", os.path.join(EXECDIR, "runProfile"+str(pnum)+".pbs")]
+                qsub_command = ["qsub", "-W block=true", os.path.join(EXECDIR, "runProfile"+str(pnum)+".pbs")]
 
                 rc = 0
                 if not cheyenne:
