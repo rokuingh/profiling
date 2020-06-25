@@ -99,8 +99,6 @@ if __name__ == '__main__':
 
     try:
         import collectResults
-        print ("\nCollect test results:", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
-
         timingfile = collectResults.timing(EXECDIR, np, runs, testcase, procs, cheyenne=cheyenne)
         memoryfile = collectResults.memory(EXECDIR, np, runs, testcase, procs, cheyenne=cheyenne)
 

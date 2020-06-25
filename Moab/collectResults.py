@@ -14,7 +14,7 @@ def timing(EXECDIR, nprocs, runs, testcase, procs, cheyenne=False):
         raise ImportWarning("Pandas not available, cannot collect timing results.")
         exit(0)
 
-    print ("\nCollect timing results (<20 min):", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
+    print ("\nCollect timing results.")
     if not cheyenne: procs = [nprocs]
 
     timeoutfilename = os.path.join(EXECDIR, "mbmesh_"+testcase+"_timing_profile_results.csv")
@@ -156,7 +156,7 @@ def process_table(table):
 
 
 def memory(EXECDIR, nprocs, runs, testcase, procs, cheyenne=False):
-    print ("\nCollect memory results (<20 min):", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
+    print ("Collect memory results (<20 min):", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
 
     if not cheyenne: procs = [nprocs]
 
