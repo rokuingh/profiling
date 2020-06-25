@@ -23,42 +23,31 @@ program MOAB_eval_dual
 
    ! Init ESMF
   call ESMF_Initialize(rc=localrc, logappendflag=.false.)
-  if (localrc /=ESMF_SUCCESS) then
-     stop
-  endif
+  if (localrc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)
 
   ! Error check number of command line args
   call ESMF_UtilGetArgC(count=numargs, rc=localrc)
-  if (localrc /=ESMF_SUCCESS) then
-    stop
-  endif
+  if (localrc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)
+
   if (numargs .ne. 2) then
      write(*,*) "ERROR: MOAB_eval Should be run with 2 arguments"
-     stop
+     call ESMF_Finalize(endflag=ESMF_END_ABORT)
   endif
 
   ! Get filenames
-    call ESMF_UtilGetArg(1, argvalue=srcfile, rc=localrc)
-  if (localrc /=ESMF_SUCCESS) then
-    stop
-  endif
+  call ESMF_UtilGetArg(1, argvalue=srcfile, rc=localrc)
+  if (localrc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)
 
   ! Get filenames
-    call ESMF_UtilGetArg(2, argvalue=dstfile, rc=localrc)
-  if (localrc /=ESMF_SUCCESS) then
-    stop
-  endif
+  call ESMF_UtilGetArg(2, argvalue=dstfile, rc=localrc)
+  if (localrc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)
 
   ! get pet info
-   call ESMF_VMGetGlobal(vm, rc=localrc)
-  if (localrc /=ESMF_SUCCESS) then
-    stop
-  endif
+  call ESMF_VMGetGlobal(vm, rc=localrc)
+  if (localrc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)
 
   call ESMF_VMGet(vm, petCount=petCount, localPet=localpet, rc=localrc)
-  if (localrc /=ESMF_SUCCESS) then
-    stop
-  endif
+  if (localrc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)
 
   ! Write out number of PETS
   if (localPet .eq. 0) then
@@ -75,17 +64,14 @@ program MOAB_eval_dual
   endif
   
   ! Make sure  MOAB is off
-    call ESMF_MeshSetMOAB(.false., rc=localrc)
-  if (localrc .ne. ESMF_SUCCESS) then
-     stop
-  endif
-  
+  call ESMF_MeshSetMOAB(.false., rc=localrc)
+  if (localrc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)
   
   ! Regridding using ESMF native Mesh
   call profile_mesh_dual(.false., srcfile, dstfile, rc=localrc)
    if (localrc /=ESMF_SUCCESS) then
      write(*,*) "ERROR IN REGRID SUBROUTINE!"
-     stop
+     call ESMF_Finalize(endflag=ESMF_END_ABORT)
   endif
 
   !!!!!!!!!!!!!!! Time MOAB Mesh !!!!!!!!!!!!
@@ -96,15 +82,12 @@ program MOAB_eval_dual
   
   ! Turn on MOAB
   call ESMF_MeshSetMOAB(.true., rc=localrc)
-  if (localrc .ne. ESMF_SUCCESS) then
-     stop
-  endif
   
   ! Regridding using MOAB Mesh
   call profile_mesh_dual(.true., srcfile, dstfile, rc=localrc)
    if (localrc /=ESMF_SUCCESS) then
      write(*,*) "ERROR IN REGRID SUBROUTINE!"
-     stop
+     call ESMF_Finalize(endflag=ESMF_END_ABORT)
     endif
   
   if (localPet .eq. 0) then
@@ -114,9 +97,7 @@ program MOAB_eval_dual
 
   ! Finalize ESMF
   call ESMF_Finalize(rc=localrc)
-  if (localrc /=ESMF_SUCCESS) then
-     stop
-  endif
+  if (localrc /=ESMF_SUCCESS) stop
 
   contains
 

@@ -28,25 +28,20 @@ program MOAB_eval_redist
 
    ! Init ESMF
   call ESMF_Initialize(rc=localrc, logappendflag=.false.)
-  if (localrc /=ESMF_SUCCESS) then
-     stop
-  endif
+  if (localrc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)
 
   ! Error check number of command line args
   call ESMF_UtilGetArgC(count=numargs, rc=localrc)
-  if (localrc /=ESMF_SUCCESS) then
-    stop
-  endif
+  if (localrc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)
+
   if (numargs .ne. 2) then
      write(*,*) "ERROR: MOAB_eval Should be run with 2 arguments"
-     stop
+     call ESMF_Finalize(endflag=ESMF_END_ABORT)
   endif
 
   ! Get filenames
   call ESMF_UtilGetArg(1, argvalue=file, rc=localrc)
-  if (localrc /=ESMF_SUCCESS) then
-    stop
-  endif
+  if (localrc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)
 
   if (index(trim(file), "ll80x80_grid.esmf.nc") /= 0) then
     numNode = 6480
@@ -57,15 +52,11 @@ program MOAB_eval_redist
   endif
 
   ! get pet info
-   call ESMF_VMGetGlobal(vm, rc=localrc)
-  if (localrc /=ESMF_SUCCESS) then
-    stop
-  endif
+  call ESMF_VMGetGlobal(vm, rc=localrc)
+  if (localrc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)
 
   call ESMF_VMGet(vm, petCount=petCount, localPet=localpet, rc=localrc)
-  if (localrc /=ESMF_SUCCESS) then
-    stop
-  endif
+  if (localrc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)
 
   ! Write out number of PETS
   if (localPet .eq. 0) then
@@ -83,16 +74,13 @@ program MOAB_eval_redist
   
   ! Make sure  MOAB is off
   call ESMF_MeshSetMOAB(.false., rc=localrc)
-  if (localrc .ne. ESMF_SUCCESS) then
-     stop
-  endif
-  
+  if (localrc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)  
   
   ! Regridding using ESMF native Mesh
   call profile_mesh_redist(.false., file, numNode, rc=localrc)
    if (localrc /=ESMF_SUCCESS) then
      write(*,*) "ERROR IN REDIST SUBROUTINE!"
-     stop
+     call ESMF_Finalize(endflag=ESMF_END_ABORT)
   endif
 
   !!!!!!!!!!!!!!! Time MOAB Mesh !!!!!!!!!!!!
@@ -103,15 +91,13 @@ program MOAB_eval_redist
   
   ! Turn on MOAB
   call ESMF_MeshSetMOAB(.true., rc=localrc)
-  if (localrc .ne. ESMF_SUCCESS) then
-     stop
-  endif
+  if (localrc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)
   
   ! Regridding using MOAB Mesh
   call profile_mesh_redist(.true., file, numNode, rc=localrc)
    if (localrc /=ESMF_SUCCESS) then
      write(*,*) "ERROR IN REDIST SUBROUTINE!"
-     stop
+     call ESMF_Finalize(endflag=ESMF_END_ABORT)
     endif
   
   if (localPet .eq. 0) then
@@ -121,9 +107,7 @@ program MOAB_eval_redist
 
   ! Finalize ESMF
   call ESMF_Finalize(rc=localrc)
-  if (localrc /=ESMF_SUCCESS) then
-     stop
-  endif
+  if (localrc /=ESMF_SUCCESS) stop
 
   contains
 
