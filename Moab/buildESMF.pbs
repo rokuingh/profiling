@@ -28,6 +28,9 @@ if [[ $testcase == "create" ]]; then
 elif [[ $testcase == "dual" ]]; then
     export ESMF_CXXCOMPILEOPTS=-DESMF_PROFILE_DUALMESH
     export ESMF_F90COMPILEOPTS=-DESMF_PROFILE_DUALMESH
+elif [[ $testcase == "grid2mesh" ]]; then
+    export ESMF_CXXCOMPILEOPTS=-DESMF_PROFILE_GRID2MESH
+    export ESMF_F90COMPILEOPTS=-DESMF_PROFILE_GRID2MESH
 elif [[ $testcase == "redist" ]]; then
     export ESMF_CXXCOMPILEOPTS=-DESMF_PROFILE_MESHREDIST
     export ESMF_F90COMPILEOPTS=-DESMF_PROFILE_MESHREDIST
@@ -38,7 +41,7 @@ elif [[ $testcase == "rendezvous" ]]; then
     export ESMF_CXXCOMPILEOPTS=-DESMF_PROFILE_RENDEZVOUS
     export ESMF_F90COMPILEOPTS=-DESMF_PROFILE_RENDEZVOUS
 else
-  echo 'USAGE: qsub -F "testcase=<testcase[create,dual,redist,regrid,rendezvous]>" esmfbuild.pbs'
+  echo 'USAGE: qsub -F "testcase=<testcase[create,dual,grid2mesh,redist,regrid,rendezvous]>" esmfbuild.pbs'
   exit 1
 fi
 

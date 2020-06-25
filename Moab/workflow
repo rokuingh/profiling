@@ -17,7 +17,7 @@ def parseArguments():
     # Positional mandatory arguments
     parser.add_argument("-np", type=int, help="Number of processing cores")
     parser.add_argument("-runs", type=int, help="Number of runs")
-    parser.add_argument("-testcase", type=str, help="Test case [create,dual,redist,regrid,rendezvous]")
+    parser.add_argument("-testcase", type=str, help="Test case [create,dual,grid2mesh,redist,regrid,rendezvous]")
 
     # Optional arguments
     parser.add_argument("--esmfmkfile", type=str, default="", help="Path to esmf.mk, will build ESMF if not supplied.")
@@ -32,6 +32,8 @@ def parseArguments():
     return args
 
 if __name__ == '__main__':
+    # test for Python 3.5 or higher
+
     # Parse the arguments
     args = parseArguments()
 
@@ -41,11 +43,11 @@ if __name__ == '__main__':
         print(str(a) + ": " + str(args.__dict__[a]))
 
     if (args.__dict__["np"] == None):
-      raise KeyError("Then number of processors must be specified. Usage: 'python workflow -np <NP> -runs <RUNS> -testcase <TESTCASE [create,dual,redist,regrid,rendezvous] --esmfmkfile <ESMFMKFILE> --cheyenne <None|ON>'")
+      raise KeyError("Then number of processors must be specified. Usage: 'python workflow -np <NP> -runs <RUNS> -testcase <TESTCASE [create,dual,grid2mesh,redist,regrid,rendezvous] --esmfmkfile <ESMFMKFILE> --cheyenne <None|ON>'")
     elif (args.__dict__["runs"] == None):
-      raise KeyError("Then number of runs must be specified. Usage: 'python workflow -np <NP> -runs <RUNS> -testcase <TESTCASE [create,dual,redist,regrid,rendezvous] --esmfmkfile <ESMFMKFILE> --cheyenne <None|ON>'")
+      raise KeyError("Then number of runs must be specified. Usage: 'python workflow -np <NP> -runs <RUNS> -testcase <TESTCASE [create,dual,grid2mesh,redist,regrid,rendezvous] --esmfmkfile <ESMFMKFILE> --cheyenne <None|ON>'")
     elif (args.__dict__["testcase"] == None):
-      raise KeyError("Then testcase must be specified. Usage: 'python workflow -np <NP> -runs <RUNS> -testcase <TESTCASE [create,dual,redist,regrid,rendezvous] --esmfmkfile <ESMFMKFILE> --cheyenne <None|ON>'")
+      raise KeyError("Then testcase must be specified. Usage: 'python workflow -np <NP> -runs <RUNS> -testcase <TESTCASE [create,dual,grid2mesh,redist,regrid,rendezvous] --esmfmkfile <ESMFMKFILE> --cheyenne <None|ON>'")
 
     np = args.__dict__["np"]
     runs = args.__dict__["runs"]
@@ -60,12 +62,18 @@ if __name__ == '__main__':
     SRCDIR="/glade/work/rokuingh/sandbox/profiling/Moab"
     GRID1=os.path.join(SRCDIR,"data", "ll1280x1280_grid.esmf.nc")
     GRID2=os.path.join(SRCDIR,"data", "ll1280x1280_grid.esmf.nc")
+    if testcase == "grid2mesh":
+        GRID1=os.path.join(SRCDIR,"data", "ll1tenthdeg_grid.nc")
+        GRID2=os.path.join(SRCDIR,"data", "ll1tenthdeg_grid.nc")
     if not cheyenne:
         ESMFDIR="/home/ryan/Dropbox/sandbox/esmf"
         RUNDIR="/home/ryan/MBMeshPerformanceResults"
         SRCDIR="/home/ryan/Dropbox/sandbox/profiling/Moab"
         GRID1=os.path.join(SRCDIR,"data", "ll80x80_grid.esmf.nc")
         GRID2=os.path.join(SRCDIR,"data", "ll80x80_grid.esmf.nc")
+        if testcase == "grid2mesh":
+            GRID1=os.path.join(SRCDIR,"data", "ll2.5deg_grid.nc")
+            GRID2=os.path.join(SRCDIR,"data", "ll2.5deg_grid.nc")
 
     procs=(36, 72, 144, 288, 576, 1152, 2304, 4608)
 
@@ -86,6 +94,9 @@ if __name__ == '__main__':
         raise RuntimeError("Error submitting the tests.")
 
     # 3 post: collect the results into csv files
+    if sys.version_info < (3, 5):
+        raise EnvironmentError ("Sorry, Python 3.5 or higher is required for test result collection.")
+
     try:
         import collectResults
         print ("\nCollect test results:", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
