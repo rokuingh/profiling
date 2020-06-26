@@ -3,16 +3,14 @@
 #
 
 import os, re
-from subprocess import Popen, check_output
+from subprocess import check_call, check_output
 from shutil import copy2
 from time import localtime, strftime
 from math import floor
 
 
-def generate_id(ROOTDIR):
+def generate_id(RUNDIR):
     import os, re
-
-    RUNDIR = os.path.join(ROOTDIR, "runs")
 
     if not os.path.isdir(RUNDIR):
         try:
@@ -106,34 +104,23 @@ def run(procs, np, SRCDIR, EXECDIR, cheyenne=False):
         for pnum in procs:
             if pnum <= np:
 
-                rc = 0
                 if cheyenne:
-                    # don't block these jobs, chaser will depend on them to finish successfully before starting
+                    # don't block these jobs, chaser depends on them to finish successfully before running
                     qsub_command = ["qsub", os.path.join(EXECDIR, "runProfile"+str(pnum)+".pbs")]
                     tmp = check_output(qsub_command).decode('UTF-8')
                     job_id = tmp.split("\n")[0]
                     job_ids.append(job_id)
                     print(job_id)
                 else:
-                    tmp = Popen(["bash", os.path.join(EXECDIR, "runProfile"+str(pnum)+".pbs")])
-                    streamdata = tmp.communicate()[0]
-                    rc = tmp.returncode
-
-                    if rc != 0:
-                        raise RuntimeError("Error in test job submissions (code {0}): {1}".format(str(rc), qsub_command))
+                    check_call(["bash", os.path.join(EXECDIR, "runProfile"+str(pnum)+".pbs")])
 
         if cheyenne:
             # chaser job will only start after all previous jobs have completed, indicates that result collection may continue
             colon = ":"
             job_s_ids = [str(i) for i in job_ids]
             chaser_command = ["qsub", "-W block=true,depend=afterok:"+colon.join(job_s_ids), os.path.join(SRCDIR, "chaser.pbs")]
-            tmp = Popen(chaser_command)
-            streamdata = tmp.communicate()[0]
-            rc = tmp.returncode
-            
+            check_call(chaser_command)
             print ("All jobs completed successfully.", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
-
-            # don't check rc here because we want to proceed regardless of what happens with the chaser
     
     except:
         raise RuntimeError("Error submitting the tests.")

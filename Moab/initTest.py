@@ -3,7 +3,7 @@
 #
 
 import sys, os, re
-from subprocess import Popen
+from subprocess import check_call
 from time import localtime, strftime
 
 # source: http://code.activestate.com/recipes/81330/
@@ -34,27 +34,18 @@ def build_esmf(ESMFDIR, SRCDIR, testcase, esmfmkfile="", cheyenne=False):
             with open(os.path.join(ESMFDIR, "buildESMF"+testcase+".pbs"), "w") as result:
                 result.write(new_text)
 
-            qsub_command = ["qsub", "-W block=true", os.path.join(ESMFDIR, "buildESMF"+testcase+".pbs")]
-
-            rc = 0
             if not cheyenne:
-                tmp = Popen(["bash", os.path.join(ESMFDIR, "buildESMF"+testcase+".pbs")])
-                streamdata = tmp.communicate()[0]
-                rc = tmp.returncode
+                check_call(["bash", os.path.join(ESMFDIR, "buildESMF"+testcase+".pbs")])
             else:  
-                tmp = Popen(qsub_command)
-                streamdata = tmp.communicate()[0]
-                rc = tmp.returncode
+                qsub_command = ["qsub", "-W block=true", os.path.join(ESMFDIR, "buildESMF"+testcase+".pbs")]
+                check_call(qsub_command)
 
-            if rc != 0:
-                raise RuntimeError("ESMF install job submission error (code {0}): {1}".format(str(rc), qsub_command))
-            else:
-                with open (os.path.join (ESMFDIR, "esmfmkfile.out"), "r") as esmfmkfileobj:
-                    ESMFMKFILE = esmfmkfileobj.read().replace("\n","")
-                print ("ESMF build and installation success.", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
+            with open (os.path.join (ESMFDIR, "esmfmkfile.out"), "r") as esmfmkfileobj:
+                ESMFMKFILE = esmfmkfileobj.read().replace("\n","")
+            print ("ESMF build and installation success.", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
         else:
             ESMFMKFILE = esmfmkfile
-            print ("\nSkip build ESMF, esmf.mk provided.")
+            print ("\nSkip ESMF build, esmf.mk provided.")
     except:
         raise RuntimeError("Error building ESMF installation.")
 
@@ -66,12 +57,7 @@ def build_test(SRCDIR, ESMFMKFILE, testcase, cheyenne=False):
     try:
         print ("Build test executable")
         test_command = ["bash", os.path.join(SRCDIR, "buildTest.bash"), testcase, ESMFMKFILE, SRCDIR, str(cheyenne)]
-
-        tmp = Popen(test_command)
-        streamdata = tmp.communicate()[0]
-        rc = tmp.returncode
-        if rc != 0:
-            raise RuntimeError("Test build subprocess error (code {0}): {1}".format(str(rc), test_command))
+        check_call(test_command)
     except:
         raise RuntimeError("Error building test executable.")
 
