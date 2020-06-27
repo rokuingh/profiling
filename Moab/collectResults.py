@@ -192,7 +192,7 @@ def memory(EXECDIR, nprocs, runs, testcase, procs, cheyenne=False):
                     for z in tables:
                         memory_results.append(process_table(z))
 
-                    mem_results_list.append([x for x in memory_results])
+                    mem_results_list.append([x for x in np.array(memory_results)])
 
                 # mem_results_list should have rss, hwm, tas for each processor
                 # mem_results_array[proc,msr,method[tag,method,msr,val]]
@@ -204,6 +204,8 @@ def memory(EXECDIR, nprocs, runs, testcase, procs, cheyenne=False):
                 mem_hwm = mem_results_array[:,1]
                 mem_tas = mem_results_array[:,2]
 
+
+                import pdb; pdb.set_trace()
                 labels = [x for x in mem_rss[0,:,1]]
 
                 # write labels to file
