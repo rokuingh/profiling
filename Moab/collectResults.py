@@ -131,27 +131,29 @@ def process_table(table):
     return 'table': a list containing 4-element tuples (tag, method, measurement, value)
     """
     from operator import itemgetter
+    
+    # Separate tables
+    before = [x for x in table if x[0] == "before"]
+    after = [x for x in table if x[0] == "after"]
 
-    halflen = int(len(table)/2)
+    before_sorted = np.array(sorted(enumerate(before), key = itemgetter(1)))
+    after_sorted = np.array(sorted(enumerate(after), key = itemgetter(1)))
+
+    assert(len(before_sorted) == len(after_sorted))
 
     # subtract values of "before" measurements from "after"s
-    val_list = [ (float(a[:][3]) - float(b[:][3])) for a, b in \
-                    zip(np.array(sorted(table, key=lambda tup: (tup[1], tup[0])))[0::2,:], \
-                        np.array(sorted(table, key=lambda tup: (tup[1], tup[0])))[1::2,:]) ]
+    val_list = [ (float(a[1][3]) - float(b[1][3])) for a, b in zip(after_sorted, before_sorted) ]
 
-    assert (len(val_list) == halflen)
+    # get the index of the unsorted before array
+    val_index = [x[0] for x in before_sorted]
 
-    # Pop all "before"s
-    table = [x for x in table if "after" in x[0]]
-
-    # resort the val_list to original ordering
-    val_index = sorted(range(len(table)), key=lambda k: table[k])
-    unsorted_val_list = [val_list[i] for i in val_index]
+    #restore the val list to the unsorted version of before measurements
+    val_list_unsorted = [val_list[val_index.index(i)] for i in range(len(val_index))]
 
     # set the subtracted values on the remaining part of the list
-    nptable = np.array(table)
-    nptable[:,3] = unsorted_val_list
-    
+    nptable = np.array(before)
+    nptable[:,3] = val_list_unsorted
+
     return nptable
 
 
@@ -172,8 +174,20 @@ def memory(EXECDIR, nprocs, runs, testcase, procs, cheyenne=False):
         # iterate runs of increasing number of processors
         for num_procs in procs:
             if num_procs <= nprocs:
+
+                msrc = 0
+                # count the number of measurements
+                logname = os.path.join(EXECDIR, str(num_procs)+"-"+str(num_run),
+                    "PET"+(str(0).zfill(int(math.ceil(math.log(num_procs,10)))))+
+                    ".ESMF_LogFile")
+                with open(logname) as f:
+                    for line in f:
+                        if (meminfo[0][0] in line):
+                            msrc = msrc + 1
+                msrc = msrc/2
+
                 # initialize an array to hold all memory measurements for all processors
-                mem_results_list = []
+                memres = np.zeros([num_procs,len(meminfo),int(msrc),4], dtype='<U68')
 
                 # iterate per-processor log files
                 for proc in range(num_procs):
@@ -188,24 +202,18 @@ def memory(EXECDIR, nprocs, runs, testcase, procs, cheyenne=False):
                         tables.append(make_table(info, logname))
                     
                     # process tables of different memory measurement tuples
-                    memory_results = []
-                    for z in tables:
-                        memory_results.append(process_table(z))
+                    for index, item in enumerate(tables):
+                        try:
+                            memres[proc, index] = process_table(item)
+                        except:
+                            raise RuntimeError("Number of measurements in not equal across processors, cannot collect memory reports. Is there a TRACE macro inside a processor-dependant loop?")
 
-                    mem_results_list.append([x for x in np.array(memory_results)])
-
-                # mem_results_list should have rss, hwm, tas for each processor
-                # mem_results_array[proc,msr,method[tag,method,msr,val]]
-
-                # average memory results over processors
-                mem_results_array = np.array(mem_results_list)
+                # memres[proc,msr,method[tag,method,msr,val]]
 
                 mem_rss = mem_results_array[:,0]
                 mem_hwm = mem_results_array[:,1]
                 mem_tas = mem_results_array[:,2]
 
-
-                import pdb; pdb.set_trace()
                 labels = [x for x in mem_rss[0,:,1]]
 
                 # write labels to file
