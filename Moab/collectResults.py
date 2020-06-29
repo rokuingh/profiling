@@ -120,7 +120,7 @@ def make_table(info, logname):
                 # set msrtag to shortened label (second element of tuple from meminfo)
                 msrtag = info[1]
 
-                entry = (tag, method, msrtag, float(mem))
+                entry = (tag, method, msrtag, mem)
 
                 table.append(entry)
 
@@ -136,16 +136,19 @@ def process_table(table):
     before = [x for x in table if x[0] == "before"]
     after = [x for x in table if x[0] == "after"]
 
-    before_sorted = np.array(sorted(enumerate(before), key = itemgetter(1)))
-    after_sorted = np.array(sorted(enumerate(after), key = itemgetter(1)))
+    before_sorted = np.array(sorted(before, key = itemgetter(1)))
+    after_sorted = np.array(sorted(after, key = itemgetter(1)))
+
+    before_mod = [x[1] for x in before]
+    before_mod_sorted = sorted(enumerate(before_mod), key = itemgetter(1))
 
     assert(len(before_sorted) == len(after_sorted))
 
     # subtract values of "before" measurements from "after"s
-    val_list = [ (float(a[1][3]) - float(b[1][3])) for a, b in zip(after_sorted, before_sorted) ]
+    val_list = [ (float(a[3]) - float(b[3])) for a, b in zip(after_sorted, before_sorted) ]
 
     # get the index of the unsorted before array
-    val_index = [x[0] for x in before_sorted]
+    val_index = [x[0] for x in before_mod_sorted]
 
     #restore the val list to the unsorted version of before measurements
     val_list_unsorted = [val_list[val_index.index(i)] for i in range(len(val_index))]
@@ -210,9 +213,9 @@ def memory(EXECDIR, nprocs, runs, testcase, procs, cheyenne=False):
 
                 # memres[proc,msr,method[tag,method,msr,val]]
 
-                mem_rss = mem_results_array[:,0]
-                mem_hwm = mem_results_array[:,1]
-                mem_tas = mem_results_array[:,2]
+                mem_rss = memres[:,0]
+                mem_hwm = memres[:,1]
+                mem_tas = memres[:,2]
 
                 labels = [x for x in mem_rss[0,:,1]]
 
