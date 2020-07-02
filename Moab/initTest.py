@@ -21,6 +21,9 @@ def build_esmf(ESMFDIR, RUNDIR, SRCDIR, testcase, esmfmkfile="", cheyenne=False)
         if (esmfmkfile == ""):
             print ("\nBuild and install ESMF (<30 minutes):", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
 
+            # call from RUNDIR to avoid polluting the source directory with output files 
+            os.chdir(RUNDIR)
+
             # build the pbs script
             replacements = {"%testcase%" : testcase,
                             "%rundir%" : RUNDIR,

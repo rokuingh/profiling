@@ -105,6 +105,9 @@ def run(procs, np, SRCDIR, EXECDIR, cheyenne=False):
         from threading import Thread
         job_threads = []
 
+        # call from EXECDIR to avoid polluting the source directory with output files 
+        os.chdir(EXECDIR)
+
         if not cheyenne: procs = [np]
 
         for pnum in procs:
