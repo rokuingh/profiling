@@ -61,11 +61,11 @@ def build_esmf(ESMFDIR, RUNDIR, SRCDIR, testcase, esmfmkfile="", cheyenne=False)
     return ESMFMKFILE
 
 
-def build_test(SRCDIR, ESMFMKFILE, testcase, cheyenne=False):
+def build_test(ESMFMKFILE, RUNDIR, SRCDIR, testcase, cheyenne=False):
     # # 1.2 initialize: build the test executable
     try:
         print ("Build test executable")
-        test_command = ["bash", os.path.join(SRCDIR, "buildTest.bash"), testcase, ESMFMKFILE, SRCDIR, str(cheyenne)]
+        test_command = ["bash", os.path.join(SRCDIR, "buildTest.bash"), ESMFMKFILE, RUNDIR, SRCDIR, testcase, str(cheyenne)]
         check_call(test_command)
     except:
         raise RuntimeError("Error building test executable.")

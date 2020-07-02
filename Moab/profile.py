@@ -4,8 +4,8 @@
 #
 # Ryan O'Kuinghttons
 # July 1, 2020
-# profiling workflow
-# Usage: python workflow -np <num_cores> -runs <num_runs> -testcase  <testcase|[create,dual,grid2mesh,redist,regrid-bilinear,regrid-conservative,rendezvous]> --esmfmkfile=<ESMFMKFILE> --execdir=<EXECDIR>
+# profile.py
+# Usage: python profile.py -np <num_cores> -runs <num_runs> -testcase  <testcase|[create,dual,grid2mesh,redist,regrid-bilinear,regrid-conservative,rendezvous]> --esmfmkfile=<ESMFMKFILE> --execdir=<EXECDIR>
 #
 import sys, os
 import numpy as np
@@ -118,16 +118,16 @@ if __name__ == '__main__':
     args = parseArguments()
 
     # Raw print arguments
-    print("\nRunning 'workflow.py' with following input parameter values: ")
+    print("\nRunning 'profile.py' with following input parameter values: ")
     for a in args.__dict__:
         print(str(a) + ": " + str(args.__dict__[a]))
 
     if (args.__dict__["np"] == None):
-      raise KeyError("Then number of processors must be specified. Usage: 'python workflow -np <NP> -runs <RUNS> -testcase <TESTCASE [create,dual,grid2mesh,redist,regrid-bilinear,regrid-conservative,rendezvous] --esmfmkfile <ESMFMKFILE> --cheyenne <None|ON>'")
+      raise KeyError("Then number of processors must be specified. Usage: 'python profile.py -np <NP> -runs <RUNS> -testcase <TESTCASE [create,dual,grid2mesh,redist,regrid-bilinear,regrid-conservative,rendezvous] --esmfmkfile <ESMFMKFILE> --cheyenne <None|ON>'")
     elif (args.__dict__["runs"] == None):
-      raise KeyError("Then number of runs must be specified. Usage: 'python workflow -np <NP> -runs <RUNS> -testcase <TESTCASE [create,dual,grid2mesh,redist,regrid-bilinear,regrid-conservative,rendezvous] --esmfmkfile <ESMFMKFILE> --cheyenne <None|ON>'")
+      raise KeyError("Then number of runs must be specified. Usage: 'python profile.py -np <NP> -runs <RUNS> -testcase <TESTCASE [create,dual,grid2mesh,redist,regrid-bilinear,regrid-conservative,rendezvous] --esmfmkfile <ESMFMKFILE> --cheyenne <None|ON>'")
     elif (args.__dict__["testcase"] == None):
-      raise KeyError("Then testcase must be specified. Usage: 'python workflow -np <NP> -runs <RUNS> -testcase <TESTCASE [create,dual,grid2mesh,redist,regrid-bilinear,regrid-conservative,rendezvous] --esmfmkfile <ESMFMKFILE> --cheyenne <None|ON>'")
+      raise KeyError("Then testcase must be specified. Usage: 'python profile.py -np <NP> -runs <RUNS> -testcase <TESTCASE [create,dual,grid2mesh,redist,regrid-bilinear,regrid-conservative,rendezvous] --esmfmkfile <ESMFMKFILE> --cheyenne <None|ON>'")
 
     np = args.__dict__["np"]
     runs = args.__dict__["runs"]
@@ -168,7 +168,7 @@ if __name__ == '__main__':
     try:
         import initTest
         if not debug: ESMFMKFILE = initTest.build_esmf(ESMFDIR, RUNDIR, SRCDIR, testcase, esmfmkfile=esmfmkfile, cheyenne=cheyenne)
-        if not debug: initTest.build_test(SRCDIR, ESMFMKFILE, testcase, cheyenne=cheyenne)
+        if not debug: initTest.build_test(ESMFMKFILE, RUNDIR, SRCDIR, testcase, cheyenne=cheyenne)
     except:
         raise RuntimeError("Error building the tests.")
 
