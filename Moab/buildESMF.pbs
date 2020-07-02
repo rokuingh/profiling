@@ -1,16 +1,17 @@
 #!/bin/bash
+#
 #PBS -N esmfbuild
 #PBS -A P93300606
 #PBS -l walltime=01:00:00
 #PBS -q economy
+#PBS -l select=1:ncpus=36:mpiprocs=36
 #PBS -j oe
 #PBS -m n
-#PBS -M ryan.okuinghttons@noaa.gov
-#PBS -l select=1:ncpus=36:mpiprocs=36
 
 set -e
 
 testcase=%testcase%
+RUNDIR=%rundir%
 ESMFDIR=%esmfdir%
 
 cd $ESMFDIR
@@ -34,24 +35,27 @@ elif [[ $testcase == "grid2mesh" ]]; then
 elif [[ $testcase == "redist" ]]; then
     export ESMF_CXXCOMPILEOPTS=-DESMF_PROFILE_MESHREDIST
     export ESMF_F90COMPILEOPTS=-DESMF_PROFILE_MESHREDIST
-elif [[ $testcase == "regrid" ]]; then
+elif [[ $testcase == "regrid-bilinear" ]]; then
+    export ESMF_CXXCOMPILEOPTS=-DESMF_PROFILE_REGRID
+    export ESMF_F90COMPILEOPTS=-DESMF_PROFILE_REGRID
+elif [[ $testcase == "regrid-conservative" ]]; then
     export ESMF_CXXCOMPILEOPTS=-DESMF_PROFILE_REGRID
     export ESMF_F90COMPILEOPTS=-DESMF_PROFILE_REGRID
 elif [[ $testcase == "rendezvous" ]]; then
     export ESMF_CXXCOMPILEOPTS=-DESMF_PROFILE_RENDEZVOUS
     export ESMF_F90COMPILEOPTS=-DESMF_PROFILE_RENDEZVOUS
 else
-  echo 'USAGE: qsub -F "testcase=<testcase[create,dual,grid2mesh,redist,regrid,rendezvous]>" esmfbuild.pbs'
+  echo 'USAGE: qsub -F "testcase=<testcase[create,dual,grid2mesh,redist,regrid-bilinear,regrid-conservative,rendezvous]>" esmfbuild.pbs'
   exit 1
 fi
 
-export ESMF_INSTALL_PREFIX=$ESMFDIR/$testcase
+export ESMF_INSTALL_PREFIX=$RUNDIR/$testcase
 
 ### Build and install ESMF
 make -j36 distclean &> /dev/null
 make -j36 &> mbmesh-$testcase-intelmpt-build.out
 make install &> mbmesh-$testcase-intelmpt-install.out
 
-# write the ESMFMKFILE to esmfmkfile.out for use by executable build script
-rm -f esmfmkfile.out
-echo "$ESMF_INSTALL_PREFIX/lib/lib$ESMF_BOPT/Linux.$ESMF_COMPILER.64.$ESMF_COMM.default/esmf.mk" > esmfmkfile.out
+# write the ESMFMKFILE to $RUNDIR/esmfmkfile.out for use by executable build script
+rm -f $ESMF_INSTALL_PREFIX/esmfmkfile.out
+echo "$ESMF_INSTALL_PREFIX/lib/lib$ESMF_BOPT/Linux.$ESMF_COMPILER.64.$ESMF_COMM.default/esmf.mk" > $ESMF_INSTALL_PREFIX/esmfmkfile.out

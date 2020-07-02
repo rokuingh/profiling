@@ -4,5 +4,6 @@ create/MOAB_eval_create
 dual/MOAB_eval_dual
 grid2mesh/MOAB_eval_grid2mesh
 redist/MOAB_eval_redist
-regrid/MOAB_eval_regrid
+regrid-bilinear/MOAB_eval_regrid-bilinear
+regrid-conservative/MOAB_eval_regrid-conservative
 rendezvous/MOAB_eval_rendezvous

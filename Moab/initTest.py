@@ -14,33 +14,39 @@ def multiple_replace(dict, text):
   # For each match, look-up corresponding value in dictionary
   return regex.sub(lambda mo: dict[mo.string[mo.start():mo.end()]], text) 
 
-def build_esmf(ESMFDIR, SRCDIR, testcase, esmfmkfile="", cheyenne=False):
+def build_esmf(ESMFDIR, RUNDIR, SRCDIR, testcase, esmfmkfile="", cheyenne=False):
     # # 1.2 initialize: build and install ESMF
     ESMFMKFILE=esmfmkfile
     try:
         if (esmfmkfile == ""):
             print ("\nBuild and install ESMF (<30 minutes):", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
 
-            # build the qsub file
+            # build the pbs script
             replacements = {"%testcase%" : testcase,
+                            "%rundir%" : RUNDIR,
                             "%esmfdir%" : ESMFDIR}
             if cheyenne:
                 replacements["#cheyenne# "] = ""
             else:
                 replacements["#test# "] = ""
 
+            # write the pbs script
+            pbscript = os.path.join(RUNDIR, "buildESMF-"+testcase+".pbs")
             with open(os.path.join(SRCDIR, "buildESMF.pbs")) as text:
                 new_text = multiple_replace(replacements, text.read())
-            with open(os.path.join(ESMFDIR, "buildESMF"+testcase+".pbs"), "w") as result:
+            with open(pbscript, "w") as result:
                 result.write(new_text)
 
-            if not cheyenne:
-                check_call(["bash", os.path.join(ESMFDIR, "buildESMF"+testcase+".pbs")])
+            # set up the pbs script for submission to qsub on cheyenne or bash otherwise
+            if cheyenne:
+                run_command = ["qsub", "-W block=true"] + [pbscript]
             else:  
-                qsub_command = ["qsub", "-W block=true", os.path.join(ESMFDIR, "buildESMF"+testcase+".pbs")]
-                check_call(qsub_command)
+                run_command = ["bash"] + [pbscript]
 
-            with open (os.path.join (ESMFDIR, "esmfmkfile.out"), "r") as esmfmkfileobj:
+            check_call(run_command)
+
+            # this is a bit hardcoded.. buildESMF.pbs writes location of esmf.mk to following file
+            with open (os.path.join(RUNDIR, testcase, "esmfmkfile.out"), "r") as esmfmkfileobj:
                 ESMFMKFILE = esmfmkfileobj.read().replace("\n","")
             print ("ESMF build and installation success.", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
         else:

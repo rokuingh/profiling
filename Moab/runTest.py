@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # coding: utf-8
-#
 
 import os, re
 from subprocess import check_call, check_output
@@ -9,8 +8,10 @@ from time import localtime, strftime
 from math import floor
 
 
-def generate_id(RUNDIR):
+def generate_id(ROOTDIR):
     import os, re
+
+    RUNDIR = os.path.join(ROOTDIR, "runs")
 
     if not os.path.isdir(RUNDIR):
         try:
@@ -93,34 +94,36 @@ def setup(SRCDIR, RUNDIR, np, runs, testcase, procs, GRID1, GRID2, cheyenne=Fals
 
     return EXECDIR
 
+def call_script(*args, **kwargs):
+    check_call(args)
+
 
 def run(procs, np, SRCDIR, EXECDIR, cheyenne=False):
     try:
         print ("\nSubmit the test runs (<15 minutes):", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
 
+        from threading import Thread
+        job_threads = []
+
         if not cheyenne: procs = [np]
 
-        job_ids = []
         for pnum in procs:
             if pnum <= np:
-
+                run_command = [os.path.join(EXECDIR, "runProfile"+str(pnum)+".pbs")]
                 if cheyenne:
-                    # don't block these jobs, chaser depends on them to finish successfully before running
-                    qsub_command = ["qsub", os.path.join(EXECDIR, "runProfile"+str(pnum)+".pbs")]
-                    tmp = check_output(qsub_command).decode('UTF-8')
-                    job_id = tmp.split("\n")[0]
-                    job_ids.append(job_id)
-                    print(job_id)
+                    run_command = ["qsub", "-W block=true"] + run_command
                 else:
-                    check_call(["bash", os.path.join(EXECDIR, "runProfile"+str(pnum)+".pbs")])
+                    run_command = ["bash"] + run_command
 
-        if cheyenne:
-            # chaser job will only start after all previous jobs have completed, indicates that result collection may continue
-            colon = ":"
-            job_s_ids = [str(i) for i in job_ids]
-            chaser_command = ["qsub", "-W block=true,depend=afterok:"+colon.join(job_s_ids), os.path.join(SRCDIR, "chaser.pbs")]
-            check_call(chaser_command)
-            print ("All jobs completed successfully.", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
+                job_threads.append(Thread(target=call_script, args=run_command))
+        
+        for job in job_threads:
+            job.start()
+
+        for job in job_threads:
+            job.join()
+
+        print ("All jobs completed successfully.", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
     
     except:
         raise RuntimeError("Error submitting the tests.")

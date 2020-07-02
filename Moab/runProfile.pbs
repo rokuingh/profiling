@@ -7,8 +7,6 @@
 #PBS -l select=%nn%:ncpus=36:mpiprocs=36
 #PBS -j oe
 #PBS -m n
-#PBS -o runProfile%np%.out
-#PBS -e runProfile%np%.err
 
 set -e
 
