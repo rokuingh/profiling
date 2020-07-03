@@ -7,11 +7,6 @@
 ! Licensed under the University of Illinois-NCSA License.
 
 ! #define profile_meshcreate
-! #define profile_meshredist
-
-! numNode = 6480 ! ll80x80_grid.esmf.nc
-! numNode = 1639680  ! ll1280x1280_grid.esmf.nc
-
 
 program MOAB_eval_create
 
@@ -21,9 +16,7 @@ program MOAB_eval_create
   integer :: localrc
   integer :: localPet, petCount
   type(ESMF_VM) :: vm
-  character(ESMF_MAXPATHLEN) :: file
-  character(ESMF_MAXPATHLEN) :: numNodeChar
-  integer :: numNode
+  character(ESMF_MAXPATHLEN) :: file, dstfile
   integer :: numargs
 
    ! Init ESMF
@@ -43,13 +36,10 @@ program MOAB_eval_create
   call ESMF_UtilGetArg(1, argvalue=file, rc=localrc)
   if (localrc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)
 
-  if (index(trim(file), "ll80x80_grid.esmf.nc") /= 0) then
-    numNode = 6480
-  elseif (index(trim(file), "ll1280x1280_grid.esmf.nc") /= 0) then
-    numNode = 1639680
-  else
-    call ESMF_Finalize(endflag=ESMF_END_ABORT)
-  endif
+  ! Get filenames
+  call ESMF_UtilGetArg(2, argvalue=dstfile, rc=localrc)
+  if (localrc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)
+
 
   ! get pet info
   call ESMF_VMGetGlobal(vm, rc=localrc)
@@ -63,7 +53,6 @@ program MOAB_eval_create
      write(*,*)
      write(*,*) "NUMBER OF PROCS = ",petCount
      write(*,*) "GRID FILE = ",trim(file)
-     write(*,*) "numNode = ", numNode
   endif
 
   !!!!!!!!!!!!!!! Time NativeMesh !!!!!!!!!!!!

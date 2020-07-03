@@ -17,8 +17,6 @@ program MOAB_eval_dual
   integer :: localPet, petCount
   type(ESMF_VM) :: vm
   character(ESMF_MAXPATHLEN) :: srcfile, dstfile
-  character(ESMF_MAXPATHLEN) :: numNodeChar
-  integer :: numNode
   integer :: numargs
 
    ! Init ESMF

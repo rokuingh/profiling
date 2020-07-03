@@ -9,8 +9,8 @@
 ! #define profile_meshcreate
 ! #define profile_meshredist
 
-! numNode = 6480 ! ll80x80_grid.esmf.nc
-! numNode = 1639680  ! ll1280x1280_grid.esmf.nc
+! numNode = 16471    ! ll2deg.esmf.nc
+! numNode = 66372481 ! ll0.03125deg.esmf.nc
 
 
 program MOAB_eval_redist
@@ -22,7 +22,6 @@ program MOAB_eval_redist
   integer :: localPet, petCount
   type(ESMF_VM) :: vm
   character(ESMF_MAXPATHLEN) :: file
-  character(ESMF_MAXPATHLEN) :: numNodeChar
   integer :: numNode
   integer :: numargs
 
@@ -43,10 +42,10 @@ program MOAB_eval_redist
   call ESMF_UtilGetArg(1, argvalue=file, rc=localrc)
   if (localrc /= ESMF_SUCCESS) call ESMF_Finalize(endflag=ESMF_END_ABORT)
 
-  if (index(trim(file), "ll80x80_grid.esmf.nc") /= 0) then
-    numNode = 6480
-  elseif (index(trim(file), "ll1280x1280_grid.esmf.nc") /= 0) then
-    numNode = 1639680
+  if (index(trim(file), "ll2deg.esmf.nc") /= 0) then
+    numNode = 16471
+  elseif (index(trim(file), "ll0.03125deg.esmf.nc") /= 0) then
+    numNode = 66372481
   else
     call ESMF_Finalize(endflag=ESMF_END_ABORT)
   endif
