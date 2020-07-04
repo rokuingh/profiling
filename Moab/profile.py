@@ -145,17 +145,17 @@ if __name__ == '__main__':
     RUNDIR="/glade/work/rokuingh/MBMeshPerformanceResults"
     SRCDIR="/glade/work/rokuingh/sandbox/profiling/Moab"
 
-    GRID1=os.path.join(SRCDIR,"data", "ll0.03125deg.esmf.nc")
-    GRID2=os.path.join(SRCDIR,"data", "ll0.03125deg.esmf.nc")
+    GRID1=os.path.join(SRCDIR,"data", "ll1x2e4deg1e7node.esmf.nc")
+    GRID2=os.path.join(SRCDIR,"data", "ll1x2e4deg1e7node.esmf.nc")
     if testcase == "create":
-        GRID1=os.path.join(SRCDIR,"data", "ll0.015625deg.esmf.nc")
-        GRID2=os.path.join(SRCDIR,"data", "ll0.015625deg.esmf.nc")
+        GRID1=os.path.join(SRCDIR,"data", "ll1x2e5deg1e7node.esmf.nc")
+        GRID2=os.path.join(SRCDIR,"data", "ll1x2e5deg1e7node.esmf.nc")
+    if testcase == "dual":
+        GRID1=os.path.join(SRCDIR,"data", "ll1x2e3deg1e6node.esmf.nc")
+        GRID2=os.path.join(SRCDIR,"data", "ll1x2e3deg1e6node.esmf.nc")
     if testcase == "grid2mesh":
-        GRID1=os.path.join(SRCDIR,"data", "ll0.0625deg.nc")
-        GRID2=os.path.join(SRCDIR,"data", "ll0.0625deg.nc")
-    if testcase == "redist":
-        GRID1=os.path.join(SRCDIR,"data", "ll0.015625deg.esmf.nc")
-        GRID2=os.path.join(SRCDIR,"data", "ll0.015625deg.esmf.nc")
+        GRID1=os.path.join(SRCDIR,"data", "ll1x2e5deg1e7node.scrip.nc")
+        GRID2=os.path.join(SRCDIR,"data", "ll1x2e5deg1e7node.scrip.nc")
 
     if not cheyenne:
         ESMFDIR="/home/ryan/Dropbox/sandbox/esmf"
@@ -167,12 +167,13 @@ if __name__ == '__main__':
         if testcase == "create":
             GRID1=os.path.join(SRCDIR,"data", "ll1deg.esmf.nc")
             GRID2=os.path.join(SRCDIR,"data", "ll1deg.esmf.nc")
+        if testcase == "dual":
+            GRID1=os.path.join(SRCDIR,"data", "ll4deg.esmf.nc")
+            GRID2=os.path.join(SRCDIR,"data", "ll4deg.esmf.nc")
         if testcase == "grid2mesh":
-            GRID1=os.path.join(SRCDIR,"data", "ll4deg.nc")
-            GRID2=os.path.join(SRCDIR,"data", "ll4deg.nc")
-        if testcase == "redist":
-            GRID1=os.path.join(SRCDIR,"data", "ll1deg.esmf.nc")
-            GRID2=os.path.join(SRCDIR,"data", "ll1deg.esmf.nc")
+            GRID1=os.path.join(SRCDIR,"data", "ll1deg.scrip.nc")
+            GRID2=os.path.join(SRCDIR,"data", "ll1deg.scrip.nc")
+
 
     procs=(36, 72, 144, 288, 576, 1152, 2304, 4608)
 
