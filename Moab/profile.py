@@ -145,17 +145,17 @@ if __name__ == '__main__':
     RUNDIR="/glade/work/rokuingh/MBMeshPerformanceResults"
     SRCDIR="/glade/work/rokuingh/sandbox/profiling/Moab"
 
-    GRID1=os.path.join(SRCDIR,"data", "ll1x2e4deg1e7node.esmf.nc")
-    GRID2=os.path.join(SRCDIR,"data", "ll1x2e4deg1e7node.esmf.nc")
+    GRID1=os.path.join(SRCDIR,"data", "ll1x2e3deg1e6node.esmf.nc")
+    GRID2=os.path.join(SRCDIR,"data", "ll1x2e3deg1e6node.esmf.nc")
     if testcase == "create":
-        GRID1=os.path.join(SRCDIR,"data", "ll1x2e5deg1e7node.esmf.nc")
-        GRID2=os.path.join(SRCDIR,"data", "ll1x2e5deg1e7node.esmf.nc")
+        GRID1=os.path.join(SRCDIR,"data", "ll1x2e4deg1e7node.esmf.nc")
+        GRID2=os.path.join(SRCDIR,"data", "ll1x2e4deg1e7node.esmf.nc")
     if testcase == "dual":
-        GRID1=os.path.join(SRCDIR,"data", "ll1x2e3deg1e6node.esmf.nc")
-        GRID2=os.path.join(SRCDIR,"data", "ll1x2e3deg1e6node.esmf.nc")
+        GRID1=os.path.join(SRCDIR,"data", "ll1x2e2deg1e6node.esmf.nc")
+        GRID2=os.path.join(SRCDIR,"data", "ll1x2e2deg1e6node.esmf.nc")
     if testcase == "grid2mesh":
-        GRID1=os.path.join(SRCDIR,"data", "ll1x2e5deg1e7node.scrip.nc")
-        GRID2=os.path.join(SRCDIR,"data", "ll1x2e5deg1e7node.scrip.nc")
+        GRID1=os.path.join(SRCDIR,"data", "ll1x2e4deg1e7node.scrip.nc")
+        GRID2=os.path.join(SRCDIR,"data", "ll1x2e4deg1e7node.scrip.nc")
 
     if not cheyenne:
         ESMFDIR="/home/ryan/Dropbox/sandbox/esmf"
