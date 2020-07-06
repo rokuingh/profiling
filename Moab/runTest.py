@@ -6,7 +6,26 @@ from subprocess import check_call, check_output
 from shutil import copy2
 from time import localtime, strftime
 from math import floor
+from threading import Thread
 
+# from: https://stackoverflow.com/questions/2829329/catch-a-threads-exception-in-the-caller-thread-in-python
+class PropagatingThread(Thread):
+    def run(self):
+        self.exc = None
+        try:
+            if hasattr(self, '_Thread__target'):
+                # Thread uses name mangling prior to Python 3.
+                self.ret = self._Thread__target(*self._Thread__args, **self._Thread__kwargs)
+            else:
+                self.ret = self._target(*self._args, **self._kwargs)
+        except BaseException as e:
+            self.exc = e
+
+    def join(self):
+        super(PropagatingThread, self).join()
+        if self.exc:
+            raise self.exc
+        return self.ret
 
 def generate_id(ROOTDIR):
     import os, re
@@ -95,17 +114,12 @@ def setup(SRCDIR, RUNDIR, np, runs, testcase, procs, GRID1, GRID2, cheyenne=Fals
     return EXECDIR
 
 def call_script(*args, **kwargs):
-    try:
-        check_call(args)
-    except:
-        raise RuntimeError(args)
-
+    check_call(args)
 
 def run(procs, np, SRCDIR, EXECDIR, cheyenne=False):
     try:
         print ("\nSubmit the test runs (<15 minutes):", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
 
-        from threading import Thread
         job_threads = []
 
         # call from EXECDIR to avoid polluting the source directory with output files 
@@ -121,7 +135,7 @@ def run(procs, np, SRCDIR, EXECDIR, cheyenne=False):
                 else:
                     run_command = ["bash"] + run_command
 
-                job_threads.append(Thread(target=call_script, args=run_command))
+                job_threads.append(PropagatingThread(target=call_script, args=run_command))
         
         for job in job_threads:
             job.start()
