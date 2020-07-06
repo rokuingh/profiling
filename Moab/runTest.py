@@ -95,7 +95,10 @@ def setup(SRCDIR, RUNDIR, np, runs, testcase, procs, GRID1, GRID2, cheyenne=Fals
     return EXECDIR
 
 def call_script(*args, **kwargs):
-    check_call(args)
+    try:
+        check_call(args)
+    except:
+        raise RuntimeError(args)
 
 
 def run(procs, np, SRCDIR, EXECDIR, cheyenne=False):
