@@ -14,7 +14,7 @@ def multiple_replace(dict, text):
   # For each match, look-up corresponding value in dictionary
   return regex.sub(lambda mo: dict[mo.string[mo.start():mo.end()]], text) 
 
-def build_esmf(ESMFDIR, RUNDIR, SRCDIR, testcase, esmfmkfile="", cheyenne=False):
+def build_esmf(ESMFDIR, RUNDIR, SRCDIR, testcase, esmfmkfile="", platform="Darwin", branch="mbmesh-redist"):
     # # 1.2 initialize: build and install ESMF
     ESMFMKFILE=esmfmkfile
     try:
@@ -27,11 +27,14 @@ def build_esmf(ESMFDIR, RUNDIR, SRCDIR, testcase, esmfmkfile="", cheyenne=False)
             # build the pbs script
             replacements = {"%testcase%" : testcase,
                             "%rundir%" : RUNDIR,
-                            "%esmfdir%" : ESMFDIR}
-            if cheyenne:
-                replacements["#cheyenne# "] = ""
-            else:
-                replacements["#test# "] = ""
+                            "%esmfdir%" : ESMFDIR,
+                            "%branch%" : branch}
+            if platform == "Cheyenne":
+                replacements["#Cheyenne# "] = ""
+            elif platform == "Linux":
+                replacements["#Linux# "] = ""
+            elif platform == "Darwin":
+                replacements["#Darwin# "] = ""
 
             # write the pbs script
             pbscript = os.path.join(RUNDIR, "buildESMF-"+testcase+".pbs")
@@ -41,7 +44,7 @@ def build_esmf(ESMFDIR, RUNDIR, SRCDIR, testcase, esmfmkfile="", cheyenne=False)
                 result.write(new_text)
 
             # set up the pbs script for submission to qsub on cheyenne or bash otherwise
-            if cheyenne:
+            if platform == "cheyenne":
                 run_command = ["qsub", "-W block=true"] + [pbscript]
             else:  
                 run_command = ["bash"] + [pbscript]
@@ -61,11 +64,11 @@ def build_esmf(ESMFDIR, RUNDIR, SRCDIR, testcase, esmfmkfile="", cheyenne=False)
     return ESMFMKFILE
 
 
-def build_test(ESMFMKFILE, RUNDIR, SRCDIR, testcase, cheyenne=False):
+def build_test(ESMFMKFILE, RUNDIR, SRCDIR, testcase, platform="Darwin"):
     # # 1.2 initialize: build the test executable
     try:
         print ("Build test executable")
-        test_command = ["bash", os.path.join(SRCDIR, "buildTest.bash"), ESMFMKFILE, RUNDIR, SRCDIR, testcase, str(cheyenne)]
+        test_command = ["bash", os.path.join(SRCDIR, "buildTest.bash"), ESMFMKFILE, RUNDIR, SRCDIR, testcase, platform]
         check_call(test_command)
     except:
         raise RuntimeError("Error building test executable.")

@@ -7,7 +7,7 @@ import numpy as np
 import subprocess
 from time import localtime, strftime
 
-def timing(EXECDIR, nprocs, runs, testcase, procs, cheyenne=False):
+def timing(EXECDIR, nprocs, runs, testcase, procs, platform="Darwin"):
     try:
         import pandas as pd
     except:
@@ -15,7 +15,7 @@ def timing(EXECDIR, nprocs, runs, testcase, procs, cheyenne=False):
         exit(0)
 
     print ("\nCollect timing results.")
-    if not cheyenne: procs = [nprocs]
+    if platform != "Cheyenne": procs = [nprocs]
 
     timeoutfilename = os.path.join(EXECDIR, "mbmesh_"+testcase+"_timing_profile_results.csv")
 
@@ -160,10 +160,10 @@ def process_table(table):
     return nptable
 
 
-def memory(EXECDIR, nprocs, runs, testcase, procs, cheyenne=False):
+def memory(EXECDIR, nprocs, runs, testcase, procs, platform="Darwin"):
     print ("Collect memory results (<20 min):", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
 
-    if not cheyenne: procs = [nprocs]
+    if platform != "Cheyenne": procs = [nprocs]
 
     meminfo = [("VmRSS", "VmRSS"), ("VmHWM", "VmHWM"), ("Total allocated space (bytes)", "VmTAS")]
 

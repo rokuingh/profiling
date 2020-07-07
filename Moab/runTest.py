@@ -65,10 +65,10 @@ def multiple_replace(dict, text):
   # For each match, look-up corresponding value in dictionary
   return regex.sub(lambda mo: dict[mo.string[mo.start():mo.end()]], text) 
 
-def setup(SRCDIR, RUNDIR, np, runs, testcase, procs, GRID1, GRID2, cheyenne=False):
+def setup(SRCDIR, RUNDIR, np, runs, testcase, procs, GRID1, GRID2, platform="Darwin"):
 
     try:
-        if not cheyenne: procs = [np]
+        if platform != "Cheyenne": procs = [np]
         EXECDIR = generate_id(RUNDIR)
 
         # run all cases in procs that are not larger than input
@@ -84,12 +84,14 @@ def setup(SRCDIR, RUNDIR, np, runs, testcase, procs, GRID1, GRID2, cheyenne=Fals
                                 "%nrun%" : str(runs),
                                 "%EXECDIR%" : EXECDIR,
                                 "%grid1%" : GRID1,
-                                "%grid2%" : GRID2,
-                                "#cheyenne# " : ""}
+                                "%grid2%" : GRID2}
 
-                if not cheyenne:
-                    replacements["#cheyenne# "] = "# "
-                    replacements["#test# "] = ""
+                if platform == "Cheyenne":
+                    replacements["#Cheyenne# "] = ""
+                elif platform == "Darwin":
+                    replacements["#Darwin# "] = ""
+                elif platform == "Linux":
+                    replacements["#Linux# "] = ""
 
                 with open(os.path.join(SRCDIR, "runProfile.pbs")) as text:
                     new_text = multiple_replace(replacements, text.read())
@@ -116,7 +118,7 @@ def setup(SRCDIR, RUNDIR, np, runs, testcase, procs, GRID1, GRID2, cheyenne=Fals
 def call_script(*args, **kwargs):
     check_call(args)
 
-def run(procs, np, SRCDIR, EXECDIR, cheyenne=False):
+def run(procs, np, SRCDIR, EXECDIR, platform="Darwin"):
     try:
         print ("\nSubmit the test runs (<15 minutes):", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
 
@@ -125,12 +127,12 @@ def run(procs, np, SRCDIR, EXECDIR, cheyenne=False):
         # call from EXECDIR to avoid polluting the source directory with output files 
         os.chdir(EXECDIR)
 
-        if not cheyenne: procs = [np]
+        if platform != "Cheyenne": procs = [np]
 
         for pnum in procs:
             if pnum <= np:
                 run_command = [os.path.join(EXECDIR, "runProfile"+str(pnum)+".pbs")]
-                if cheyenne:
+                if platform == "Cheyenne":
                     run_command = ["qsub", "-W block=true"] + run_command
                 else:
                     run_command = ["bash"] + run_command

@@ -13,13 +13,17 @@ set -e
 testcase=%testcase%
 RUNDIR=%rundir%
 ESMFDIR=%esmfdir%
+BRANCH=%branch%
 
 cd $ESMFDIR
+git checkout $BRANCH
 
-#cheyenne# module purge; module load ncarenv/1.3 intel/18.0.5 ncarcompilers/0.5.0 mpt/2.19 netcdf/4.7.1; 
-#cheyenne# export ESMF_COMPILER=intel; export ESMF_COMM=mpt; export ESMF_BOPT=O; export ESMF_OPTLEVEL=2; unset ESMF_TESTEXHAUSTIVE; export ESMF_NETCDF=split; export ESMF_NETCDF_INCLUDE=/glade/u/apps/ch/opt/netcdf/4.7.1/intel/18.0.5/include; export ESMF_NETCDF_LIBPATH=/glade/u/apps/ch/opt/netcdf/4.7.1/intel/18.0.5/lib;
+#Cheyenne# module purge; module load ncarenv/1.3 intel/18.0.5 ncarcompilers/0.5.0 mpt/2.19 netcdf/4.7.1; 
+#Cheyenne# export ESMF_COMPILER=intel; export ESMF_COMM=mpt; export ESMF_BOPT=O; export ESMF_OPTLEVEL=2; unset ESMF_TESTEXHAUSTIVE; export ESMF_NETCDF=split; export ESMF_NETCDF_INCLUDE=/glade/u/apps/ch/opt/netcdf/4.7.1/intel/18.0.5/include; export ESMF_NETCDF_LIBPATH=/glade/u/apps/ch/opt/netcdf/4.7.1/intel/18.0.5/lib;
 
-#test# export ESMF_COMPILER=gfortran; export ESMF_COMM=openmpi; export ESMF_BOPT=O; export ESMF_OPTLEVEL=2; unset ESMF_TESTEXHAUSTIVE; export ESMF_NETCDF=split; export ESMF_NETCDF_INCLUDE=/usr/local/include; export ESMF_NETCDF_LIBPATH=/usr/local/lib;
+#Linux# export ESMF_COMPILER=gfortran; export ESMF_COMM=openmpi; export ESMF_BOPT=O; export ESMF_OPTLEVEL=2; unset ESMF_TESTEXHAUSTIVE; export ESMF_NETCDF=split; export ESMF_NETCDF_INCLUDE=/usr/local/include; export ESMF_NETCDF_LIBPATH=/usr/local/lib; ESMF_OS=Linux;
+
+#Darwin# export ESMF_COMPILER=gfortran; export ESMF_COMM=openmpi; export ESMF_BOPT=O; export ESMF_OPTLEVEL=2; unset ESMF_TESTEXHAUSTIVE; export ESMF_NETCDF=split; export ESMF_NETCDF_INCLUDE=/usr/local/include; export ESMF_NETCDF_LIBPATH=/usr/local/lib; ESMF_OS=Darwin;
 
 unset ESMF_CXXCOMPILEOPTS; unset ESMF_F90COMPILEOPTS;
 
@@ -53,9 +57,9 @@ export ESMF_INSTALL_PREFIX=$RUNDIR/$testcase
 
 ### Build and install ESMF
 make -j36 distclean &> /dev/null
-make -j36 &> mbmesh-$testcase-intelmpt-build.out
-make install &> mbmesh-$testcase-intelmpt-install.out
+make -j36 &> $BRANCH-$testcase-$ESMF_COMPILER-$ESMF_COMM-build.out
+make install &> $BRANCH-$testcase-$ESMF_COMPILER-$ESMF_COMM-install.out
 
 # write the ESMFMKFILE to $RUNDIR/esmfmkfile.out for use by executable build script
 rm -f $ESMF_INSTALL_PREFIX/esmfmkfile.out
-echo "$ESMF_INSTALL_PREFIX/lib/lib$ESMF_BOPT/Linux.$ESMF_COMPILER.64.$ESMF_COMM.default/esmf.mk" > $ESMF_INSTALL_PREFIX/esmfmkfile.out
+echo "$ESMF_INSTALL_PREFIX/lib/lib$ESMF_BOPT/$ESMF_OS.$ESMF_COMPILER.64.$ESMF_COMM.default/esmf.mk" > $ESMF_INSTALL_PREFIX/esmfmkfile.out
