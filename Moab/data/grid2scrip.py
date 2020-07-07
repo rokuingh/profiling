@@ -5,7 +5,7 @@ from ocgis.test import create_gridxy_global
 from ocgis.util.helpers import get_esmf_corners_from_ocgis_corners
 
 # Spatial resolution of the output grid in degrees.
-RES = 5
+RES = 4
 RESOLUTION = 1/2**RES
 # Path to the output netCDF file.
 OUTFILE = "ll1x2e"+str(RES)+'deg.scrip.nc'

@@ -44,8 +44,8 @@ program MOAB_eval_redist
 
   if (index(trim(file), "ll2deg.esmf.nc") /= 0) then
     numNode = 16471
-  elseif (index(trim(file), "ll0.03125deg.esmf.nc") /= 0) then
-    numNode = 66372481
+  elseif (index(trim(file), "ll1x2e3deg10e6node.esmf.nc") /= 0) then
+    numNode = 4151521
   else
     call ESMF_Finalize(endflag=ESMF_END_ABORT)
   endif
