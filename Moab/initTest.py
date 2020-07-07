@@ -28,13 +28,8 @@ def build_esmf(ESMFDIR, RUNDIR, SRCDIR, testcase, esmfmkfile="", platform="Darwi
             replacements = {"%testcase%" : testcase,
                             "%rundir%" : RUNDIR,
                             "%esmfdir%" : ESMFDIR,
-                            "%branch%" : branch}
-            if platform == "Cheyenne":
-                replacements["#Cheyenne# "] = ""
-            elif platform == "Linux":
-                replacements["#Linux# "] = ""
-            elif platform == "Darwin":
-                replacements["#Darwin# "] = ""
+                            "%branch%" : branch,
+                            "%platform%" : platform}
 
             # write the pbs script
             pbscript = os.path.join(RUNDIR, "buildESMF-"+testcase+".pbs")

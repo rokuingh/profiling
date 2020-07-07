@@ -10,22 +10,35 @@
 
 set -e
 
+np=%np%
+nrun=%nrun%
+EXECDIR=%EXECDIR%
+PLATFORM=%platform%
+grid1=%grid1%
+grid2=%grid2%
+
 # load the run environment
-#Cheyenne# source /etc/profile.d/modules.sh
-#Cheyenne# module purge
-#Cheyenne# module load ncarenv/1.3 intel/18.0.5 ncarcompilers/0.5.0 mpt/2.19 netcdf/4.7.1
+if [[ $PLATFORM == "Cheyenne" ]]; then
+    source /etc/profile.d/modules.sh
+    module purge
+    module load ncarenv/1.3 intel/18.0.5 ncarcompilers/0.5.0 mpt/2.19 netcdf/4.7.1
+fi
 
 export ESMF_RUNTIME_PROFILE=ON
 export ESMF_RUNTIME_PROFILE_OUTPUT=SUMMARY
 
-for ((ind=1; ind<%nrun%+1; ++ind))
+for ((ind=1; ind<$nrun+1; ++ind))
 do
-    cd %EXECDIR%/%np%-$ind
-    #Cheyenne# mpiexec_mpt -n %np% %EXECDIR%/%np%-$ind/MOAB_eval %grid1% %grid2% > %EXECDIR%/%np%-$ind/MOAB_eval%np%-$ind.out
-    #Cheyenne# echo "mpiexec_mpt -n %np% %EXECDIR%/%np%-$ind/MOAB_eval %grid1% %grid2% > %EXECDIR%/%np%-$ind/MOAB_eval%np%-$ind.out"
-    #Darwin# mpirun -n %np% %EXECDIR%/%np%-$ind/MOAB_eval %grid1% %grid2% > %EXECDIR%/%np%-$ind/MOAB_eval%np%-$ind.out
-    #Darwin# echo "mpirun -n %np% %EXECDIR%/%np%-$ind/MOAB_eval %grid1% %grid2% > %EXECDIR%/%np%-$ind/MOAB_eval%np%-$ind.out"
-    #Linux# mpirun -n %np% %EXECDIR%/%np%-$ind/MOAB_eval %grid1% %grid2% > %EXECDIR%/%np%-$ind/MOAB_eval%np%-$ind.out
-    #Linux# echo "mpirun -n %np% %EXECDIR%/%np%-$ind/MOAB_eval %grid1% %grid2% > %EXECDIR%/%np%-$ind/MOAB_eval%np%-$ind.out"
+    cd $EXECDIR/$np-$ind
+    if [[ $PLATFORM == "Cheyenne" ]]; then
+        mpiexec_mpt -n $np $EXECDIR/$np-$ind/MOAB_eval $grid1 $grid2 > $EXECDIR/$np-$ind/MOAB_eval$np-$ind.out
+        echo "mpiexec_mpt -n $np $EXECDIR/$np-$ind/MOAB_eval $grid1 $grid2 > $EXECDIR/$np-$ind/MOAB_eval$np-$ind.out"
+    elif [[ $PLATFORM == "Darwin" ]]; then
+        mpirun -n $np $EXECDIR/$np-$ind/MOAB_eval $grid1 $grid2 > $EXECDIR/$np-$ind/MOAB_eval$np-$ind.out
+        echo "mpirun -n $np $EXECDIR/$np-$ind/MOAB_eval $grid1 $grid2 > $EXECDIR/$np-$ind/MOAB_eval$np-$ind.out"
+    elif [[ $PLATFORM == "Linux" ]]; then
+        mpirun -n $np $EXECDIR/$np-$ind/MOAB_eval $grid1 $grid2 > $EXECDIR/$np-$ind/MOAB_eval$np-$ind.out
+        echo "mpirun -n $np $EXECDIR/$np-$ind/MOAB_eval $grid1 $grid2 > $EXECDIR/$np-$ind/MOAB_eval$np-$ind.out"
+    fi
 done
 

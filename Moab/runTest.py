@@ -66,7 +66,6 @@ def multiple_replace(dict, text):
   return regex.sub(lambda mo: dict[mo.string[mo.start():mo.end()]], text) 
 
 def setup(SRCDIR, RUNDIR, np, runs, testcase, procs, GRID1, GRID2, platform="Darwin"):
-
     try:
         if platform != "Cheyenne": procs = [np]
         EXECDIR = generate_id(RUNDIR)
@@ -83,15 +82,9 @@ def setup(SRCDIR, RUNDIR, np, runs, testcase, procs, GRID1, GRID2, platform="Dar
                                 "%nn%" : str(nnum),
                                 "%nrun%" : str(runs),
                                 "%EXECDIR%" : EXECDIR,
+                                "%platform%" : platform,
                                 "%grid1%" : GRID1,
                                 "%grid2%" : GRID2}
-
-                if platform == "Cheyenne":
-                    replacements["#Cheyenne# "] = ""
-                elif platform == "Darwin":
-                    replacements["#Darwin# "] = ""
-                elif platform == "Linux":
-                    replacements["#Linux# "] = ""
 
                 with open(os.path.join(SRCDIR, "runProfile.pbs")) as text:
                     new_text = multiple_replace(replacements, text.read())

@@ -10,56 +10,64 @@
 
 set -e
 
-testcase=%testcase%
+TESTCASE=%testcase%
 RUNDIR=%rundir%
 ESMFDIR=%esmfdir%
 BRANCH=%branch%
+PLATFORM=%platform%
 
 cd $ESMFDIR
 git checkout $BRANCH
 
-#Cheyenne# module purge; module load ncarenv/1.3 intel/18.0.5 ncarcompilers/0.5.0 mpt/2.19 netcdf/4.7.1; 
-#Cheyenne# export ESMF_COMPILER=intel; export ESMF_COMM=mpt; export ESMF_BOPT=O; export ESMF_OPTLEVEL=2; unset ESMF_TESTEXHAUSTIVE; export ESMF_NETCDF=split; export ESMF_NETCDF_INCLUDE=/glade/u/apps/ch/opt/netcdf/4.7.1/intel/18.0.5/include; export ESMF_NETCDF_LIBPATH=/glade/u/apps/ch/opt/netcdf/4.7.1/intel/18.0.5/lib;
+export ESMF_BOPT=O; export ESMF_OPTLEVEL=2; export ESMF_ABI=64; unset ESMF_TESTEXHAUSTIVE;
 
-#Linux# export ESMF_COMPILER=gfortran; export ESMF_COMM=openmpi; export ESMF_BOPT=O; export ESMF_OPTLEVEL=2; unset ESMF_TESTEXHAUSTIVE; export ESMF_NETCDF=split; export ESMF_NETCDF_INCLUDE=/usr/local/include; export ESMF_NETCDF_LIBPATH=/usr/local/lib; ESMF_OS=Linux;
-
-#Darwin# export ESMF_COMPILER=gfortran; export ESMF_COMM=openmpi; export ESMF_BOPT=O; export ESMF_OPTLEVEL=2; unset ESMF_TESTEXHAUSTIVE; export ESMF_NETCDF=split; export ESMF_NETCDF_INCLUDE=/usr/local/include; export ESMF_NETCDF_LIBPATH=/usr/local/lib; ESMF_OS=Darwin;
+if [[ $PLATFORM == "Cheyenne" ]]; then
+    module purge; module load ncarenv/1.3 intel/18.0.5 ncarcompilers/0.5.0 mpt/2.19 netcdf/4.7.1; 
+    export ESMF_COMPILER=intel; export ESMF_COMM=mpt; export ESMF_NETCDF=split; export ESMF_NETCDF_INCLUDE=/glade/u/apps/ch/opt/netcdf/4.7.1/intel/18.0.5/include; export ESMF_NETCDF_LIBPATH=/glade/u/apps/ch/opt/netcdf/4.7.1/intel/18.0.5/lib;
+elif [[ $PLATFORM == "Linux" ]]; then
+    export ESMF_COMPILER=gfortran; export ESMF_COMM=openmpi; export ESMF_NETCDF=split; export ESMF_NETCDF_INCLUDE=/usr/local/include; export ESMF_NETCDF_LIBPATH=/usr/local/lib; ESMF_OS=Linux;
+elif [[ $PLATFORM == "Darwin" ]]; then
+    export ESMF_COMPILER=gfortran; export ESMF_COMM=openmpi; export ESMF_NETCDF=split; export ESMF_NETCDF_INCLUDE=/usr/local/include; export ESMF_NETCDF_LIBPATH=/usr/local/lib; ESMF_OS=Darwin;
+else
+    echo 'USAGE: PLATFORM must be set to Cheyenne, Linux or Darwin.'
+    exit 1
+fi
 
 unset ESMF_CXXCOMPILEOPTS; unset ESMF_F90COMPILEOPTS;
 
-if [[ $testcase == "create" ]]; then
+if [[ $TESTCASE == "create" ]]; then
     export ESMF_CXXCOMPILEOPTS=-DESMF_PROFILE_MESHCREATE
     export ESMF_F90COMPILEOPTS=-DESMF_PROFILE_MESHCREATE
-elif [[ $testcase == "dual" ]]; then
+elif [[ $TESTCASE == "dual" ]]; then
     export ESMF_CXXCOMPILEOPTS=-DESMF_PROFILE_DUALMESH
     export ESMF_F90COMPILEOPTS=-DESMF_PROFILE_DUALMESH
-elif [[ $testcase == "grid2mesh" ]]; then
+elif [[ $TESTCASE == "grid2mesh" ]]; then
     export ESMF_CXXCOMPILEOPTS=-DESMF_PROFILE_GRID2MESH
     export ESMF_F90COMPILEOPTS=-DESMF_PROFILE_GRID2MESH
-elif [[ $testcase == "redist" ]]; then
+elif [[ $TESTCASE == "redist" ]]; then
     export ESMF_CXXCOMPILEOPTS=-DESMF_PROFILE_MESHREDIST
     export ESMF_F90COMPILEOPTS=-DESMF_PROFILE_MESHREDIST
-elif [[ $testcase == "regrid-bilinear" ]]; then
+elif [[ $TESTCASE == "regrid-bilinear" ]]; then
     export ESMF_CXXCOMPILEOPTS=-DESMF_PROFILE_REGRID
     export ESMF_F90COMPILEOPTS=-DESMF_PROFILE_REGRID
-elif [[ $testcase == "regrid-conservative" ]]; then
+elif [[ $TESTCASE == "regrid-conservative" ]]; then
     export ESMF_CXXCOMPILEOPTS=-DESMF_PROFILE_REGRID
     export ESMF_F90COMPILEOPTS=-DESMF_PROFILE_REGRID
-elif [[ $testcase == "rendezvous" ]]; then
+elif [[ $TESTCASE == "rendezvous" ]]; then
     export ESMF_CXXCOMPILEOPTS=-DESMF_PROFILE_RENDEZVOUS
     export ESMF_F90COMPILEOPTS=-DESMF_PROFILE_RENDEZVOUS
 else
-  echo 'USAGE: qsub -F "testcase=<testcase[create,dual,grid2mesh,redist,regrid-bilinear,regrid-conservative,rendezvous]>" esmfbuild.pbs'
+  echo 'USAGE: TESTCASE must be set to create, dual, grid2mesh, redist, regrid-bilinear, regrid-conservative, or rendezvous'
   exit 1
 fi
 
-export ESMF_INSTALL_PREFIX=$RUNDIR/$testcase
+export ESMF_INSTALL_PREFIX=$RUNDIR/$TESTCASE
 
 ### Build and install ESMF
 make -j36 distclean &> /dev/null
-make -j36 &> $BRANCH-$testcase-$ESMF_COMPILER-$ESMF_COMM-build.out
-make install &> $BRANCH-$testcase-$ESMF_COMPILER-$ESMF_COMM-install.out
+make -j36 &> $BRANCH-$TESTCASE-$ESMF_COMPILER-$ESMF_COMM-build.out
+make install &> $BRANCH-$TESTCASE-$ESMF_COMPILER-$ESMF_COMM-install.out
 
 # write the ESMFMKFILE to $RUNDIR/esmfmkfile.out for use by executable build script
 rm -f $ESMF_INSTALL_PREFIX/esmfmkfile.out
-echo "$ESMF_INSTALL_PREFIX/lib/lib$ESMF_BOPT/$ESMF_OS.$ESMF_COMPILER.64.$ESMF_COMM.default/esmf.mk" > $ESMF_INSTALL_PREFIX/esmfmkfile.out
+echo "$ESMF_INSTALL_PREFIX/lib/lib$ESMF_BOPT/$ESMF_OS.$ESMF_COMPILER.$ESMF_ABI.$ESMF_COMM.default/esmf.mk" > $ESMF_INSTALL_PREFIX/esmfmkfile.out
