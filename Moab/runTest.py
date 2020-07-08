@@ -65,7 +65,7 @@ def multiple_replace(dict, text):
   # For each match, look-up corresponding value in dictionary
   return regex.sub(lambda mo: dict[mo.string[mo.start():mo.end()]], text) 
 
-def setup(SRCDIR, RUNDIR, np, runs, testcase, procs, GRID1, GRID2, platform="Darwin"):
+def setup(SRCDIR, RUNDIR, np, runs, testcase, procs, GRID1, GRID2, platform):
     try:
         if platform != "Cheyenne": procs = [np]
         EXECDIR = generate_id(RUNDIR)
@@ -111,7 +111,7 @@ def setup(SRCDIR, RUNDIR, np, runs, testcase, procs, GRID1, GRID2, platform="Dar
 def call_script(*args, **kwargs):
     check_call(args)
 
-def run(procs, np, SRCDIR, EXECDIR, platform="Darwin"):
+def run(procs, np, SRCDIR, EXECDIR, platform):
     try:
         print ("\nSubmit the test runs (<15 minutes):", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
 

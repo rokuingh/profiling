@@ -15,14 +15,6 @@ grid = create_gridxy_global(resolution=RESOLUTION, with_bounds=True, wrapped=Fal
 # Grid should not be vectorized
 grid.expand()
 
-# Should I be using ESMF corners?
-# # Convert ocgis corners to esmf corners
-# esmf_corners_x = get_esmf_corners_from_ocgis_corners(grid.x.bounds.v())
-# esmf_corners_y = get_esmf_corners_from_ocgis_corners(grid.y.bounds.v())
-# # Create one-based global index
-# indexing = np.arange(1, esmf_corners_x.size + 1, dtype=np.int32).reshape(esmf_corners_x.shape)
-
-
 # Write out the data
 grid_size = grid.archetype.size
 lat, lon = grid.x.shape

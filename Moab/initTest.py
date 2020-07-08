@@ -14,11 +14,26 @@ def multiple_replace(dict, text):
   # For each match, look-up corresponding value in dictionary
   return regex.sub(lambda mo: dict[mo.string[mo.start():mo.end()]], text) 
 
-def build_esmf(ESMFDIR, RUNDIR, SRCDIR, testcase, esmfmkfile="", platform="Darwin", branch="mbmesh-redist"):
+def build_esmf(ESMFDIR, RUNDIR, SRCDIR, testcase, esmfmkfile, platform, branch):
     # # 1.2 initialize: build and install ESMF
-    ESMFMKFILE=esmfmkfile
-    try:
-        if (esmfmkfile == ""):
+    ESMFMKFILE=""
+    if (esmfmkfile != ""):
+        try:
+            # verify validity of ESMFMKFILE before accepting
+            accept = False
+            with open(esmfmkfile) as esmfmkf:
+                for line in esmfmkf:
+                    if "ESMF environment variables pointing to 3rd party software" in line: accept = True
+            if accept:
+                print ("\nSkip ESMF build, esmf.mk provided.")
+                ESMFMKFILE = esmfmkfile
+            else:
+                print ("\nSorry, there is something wrong with the provided esmf.mk, please check it and resubmit: ", esmfmkfile)
+                raise EnvironmentError
+        except EnvironmentError as err:
+            raise
+    else:
+        try:
             print ("\nBuild and install ESMF (<30 minutes):", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
 
             # call from RUNDIR to avoid polluting the source directory with output files 
@@ -39,7 +54,7 @@ def build_esmf(ESMFDIR, RUNDIR, SRCDIR, testcase, esmfmkfile="", platform="Darwi
                 result.write(new_text)
 
             # set up the pbs script for submission to qsub on cheyenne or bash otherwise
-            if platform == "cheyenne":
+            if platform == "Cheyenne":
                 run_command = ["qsub", "-W block=true"] + [pbscript]
             else:  
                 run_command = ["bash"] + [pbscript]
@@ -50,16 +65,13 @@ def build_esmf(ESMFDIR, RUNDIR, SRCDIR, testcase, esmfmkfile="", platform="Darwi
             with open (os.path.join(RUNDIR, testcase, "esmfmkfile.out"), "r") as esmfmkfileobj:
                 ESMFMKFILE = esmfmkfileobj.read().replace("\n","")
             print ("ESMF build and installation success.", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
-        else:
-            ESMFMKFILE = esmfmkfile
-            print ("\nSkip ESMF build, esmf.mk provided.")
-    except:
-        raise RuntimeError("Error building ESMF installation.")
+        except:
+            raise RuntimeError("Error building ESMF installation.")
 
     return ESMFMKFILE
 
 
-def build_test(ESMFMKFILE, RUNDIR, SRCDIR, testcase, platform="Darwin"):
+def build_test(ESMFMKFILE, RUNDIR, SRCDIR, testcase, platform):
     # # 1.2 initialize: build the test executable
     try:
         print ("Build test executable")
