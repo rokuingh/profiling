@@ -24,7 +24,7 @@ export ESMF_BOPT=O; export ESMF_OPTLEVEL=2; export ESMF_ABI=64; unset ESMF_TESTE
 if [[ $PLATFORM == "Cheyenne" ]]; then
     source /etc/profile.d/modules.sh
     module purge; module load ncarenv/1.3 intel/18.0.5 ncarcompilers/0.5.0 mpt/2.19 netcdf/4.7.1; 
-    export ESMF_COMPILER=intel; export ESMF_COMM=mpt; export ESMF_NETCDF=split; export ESMF_NETCDF_INCLUDE=/glade/u/apps/ch/opt/netcdf/4.7.1/intel/18.0.5/include; export ESMF_NETCDF_LIBPATH=/glade/u/apps/ch/opt/netcdf/4.7.1/intel/18.0.5/lib;
+    export ESMF_COMPILER=intel; export ESMF_COMM=mpt; export ESMF_NETCDF=split; export ESMF_NETCDF_INCLUDE=/glade/u/apps/ch/opt/netcdf/4.7.1/intel/18.0.5/include; export ESMF_NETCDF_LIBPATH=/glade/u/apps/ch/opt/netcdf/4.7.1/intel/18.0.5/lib; ESMF_OS=Linux;
 elif [[ $PLATFORM == "Linux" ]]; then
     export ESMF_COMPILER=gfortran; export ESMF_COMM=openmpi; export ESMF_NETCDF=split; export ESMF_NETCDF_INCLUDE=/usr/local/include; export ESMF_NETCDF_LIBPATH=/usr/local/lib; ESMF_OS=Linux;
 elif [[ $PLATFORM == "Darwin" ]]; then
