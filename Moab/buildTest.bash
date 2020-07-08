@@ -12,6 +12,7 @@ testcase=$4
 platform=$5
 
 if [[ $platform == "Cheyenne" ]]; then
+  source /etc/profile.d/modules.sh
   module purge; module load ncarenv/1.3 intel/18.0.5 ncarcompilers/0.5.0 mpt/2.19 netcdf/4.7.1; 
 fi
 
