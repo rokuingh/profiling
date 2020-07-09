@@ -11,49 +11,63 @@ import numpy as np
 import argparse
 import subprocess
 from time import localtime, strftime, time
+import click
 
-def parseArguments():
-    # Create argument parser
-    parser = argparse.ArgumentParser()
+# def parseArguments():
+#     # Create argument parser
+#     parser = argparse.ArgumentParser()
+# 
+#     # Positional mandatory arguments
+#     parser.add_argument("-np", type=int, help="Number of processing cores")
+#     parser.add_argument("-testcase", type=str, help="Test case  [create,dual,grid2mesh,redist,regrid-bilinear,regrid-conservative,rendezvous]")
+# 
+#     # Optional arguments
+#     parser.add_argument("--branch", type=str, default="mbmesh-redist", help="Branch of the ESMF repo to use")
+#     parser.add_argument("--esmfmkfile", type=str, default="", help="Path to esmf.mk, will build ESMF if not supplied")
+#     parser.add_argument("--platform", type=str, default="Darwin", help="Set to 'Cheyenne', 'Darwin' or 'Linux'")
+#     parser.add_argument("--runs", type=int, default=1, help="Number of runs")
+# 
+#     # Print version
+#     parser.add_argument("--version", action="version", version='%(prog)s - Version  0.1')
+# 
+#     # Parse arguments
+#     args = parser.parse_args()
+# 
+#     return args
 
-    # Positional mandatory arguments
-    parser.add_argument("-np", type=int, help="Number of processing cores")
-    parser.add_argument("-testcase", type=str, help="Test case  [create,dual,grid2mesh,redist,regrid-bilinear,regrid-conservative,rendezvous]")
-
-    # Optional arguments
-    parser.add_argument("--branch", type=str, default="mbmesh-redist", help="Branch of the ESMF repo to use.")
-    parser.add_argument("--esmfmkfile", type=str, default="", help="Path to esmf.mk, will build ESMF if not supplied.")
-    parser.add_argument("--platform", type=str, default="Darwin", help="Set to 'Cheyenne', 'Darwin' or 'Linux'.")
-    parser.add_argument("--runs", type=int, default=1, help="Number of runs")
-
-    # Print version
-    parser.add_argument("--version", action="version", version='%(prog)s - Version  0.1')
-
-    # Parse arguments
-    args = parser.parse_args()
-
-    return args
-
-if __name__ == '__main__':
+@click.command()
+@click.option('-np', type=int, required=True, help='Number of processing cores')
+@click.option('-testcase', type=str, required=True, help='Test case  [create,dual,grid2mesh,redist,regrid-bilinear,regrid-conservative,rendezvous]')
+@click.option('--branch', type=str, default="mbmesh-redist", help='Branch of the ESMF repo to use')
+@click.option('--esmfmkfile', type=str, default="", help='Path to esmf.mk, will build ESMF if not supplied')
+@click.option('--platform', type=str, default="Darwin", help='Platform configuration [Cheyenne, Darwin, Linux]')
+@click.option('--runs', type=int, default=1, help='Number of runs')
+def cli(np, testcase, branch, esmfmkfile, platform, runs):
     # Parse the arguments
-    args = parseArguments()
+    # args = parseArguments()
 
     # Raw print arguments
-    print("\nRunning 'profile.py' with following input parameter values: ")
-    for a in args.__dict__:
-        print(str(a) + ": " + str(args.__dict__[a]))
-
-    if (args.__dict__["np"] == None):
-      raise KeyError("Then number of processors must be specified. Usage: 'python profile.py -np <NP> -testcase <TESTCASE [create, dual, grid2mesh, redist, regrid-bilinear, regrid-conservative, rendezvous] --branch <BRANCH [default=mbmesh-redist]> --esmfmkfile <ESMFMKFILE> --platform <PLATFORM [Darwin(default), Linux, Cheyenne]> --runs <RUNS [default=1]'")
-    elif (args.__dict__["testcase"] == None):
-      raise KeyError("Then testcase must be specified. Usage: 'python profile.py -np <NP> -testcase <TESTCASE [create, dual, grid2mesh, redist, regrid-bilinear, regrid-conservative, rendezvous] --branch <BRANCH [default=mbmesh-redist]> --esmfmkfile <ESMFMKFILE> --platform <PLATFORM [Darwin(default), Linux, Cheyenne]> --runs <RUNS [default=1]'")
-
-    np = args.__dict__["np"]
-    testcase = args.__dict__["testcase"]
-    branch = args.__dict__["branch"]
-    esmfmkfile = args.__dict__["esmfmkfile"]
-    platform = args.__dict__["platform"]
-    runs = args.__dict__["runs"]
+    click.echo("\nRunning 'profile.py' with following input parameter values: ")
+    click.echo("-np = ", np)
+    click.echo("-testcase = ", testcase)
+    click.echo("--branch = ", branch)
+    click.echo("--esmfmkfile = ", esmfmkfile)
+    click.echo("--platform = ", platform)
+    click.echo("--runs = ", runs)
+    # for a in args.__dict__:
+    #     print(str(a) + ": " + str(args.__dict__[a]))
+    # 
+    # if (args.__dict__["np"] == None):
+    #   raise KeyError("Then number of processors must be specified. Usage: 'python profile.py -np <NP> -testcase <TESTCASE [create, dual, grid2mesh, redist, regrid-bilinear, regrid-conservative, rendezvous] --branch <BRANCH [default=mbmesh-redist]> --esmfmkfile <ESMFMKFILE> --platform <PLATFORM [Darwin(default), Linux, Cheyenne]> --runs <RUNS [default=1]'")
+    # elif (args.__dict__["testcase"] == None):
+    #   raise KeyError("Then testcase must be specified. Usage: 'python profile.py -np <NP> -testcase <TESTCASE [create, dual, grid2mesh, redist, regrid-bilinear, regrid-conservative, rendezvous] --branch <BRANCH [default=mbmesh-redist]> --esmfmkfile <ESMFMKFILE> --platform <PLATFORM [Darwin(default), Linux, Cheyenne]> --runs <RUNS [default=1]'")
+    # 
+    # np = args.__dict__["np"]
+    # testcase = args.__dict__["testcase"]
+    # branch = args.__dict__["branch"]
+    # esmfmkfile = args.__dict__["esmfmkfile"]
+    # platform = args.__dict__["platform"]
+    # runs = args.__dict__["runs"]
 
     # Parameters
     # default is Darwin
@@ -135,3 +149,7 @@ if __name__ == '__main__':
 # # more mbmesh_$testcase_timing_profile_results.csv | xclip -sel clip
 # # scp rokuingh@cheyenne.ucar.edu:/glade/work/rokuingh/MBMeshPerformanceResults/runs/<num>/mbmesh_$testcase_memory_profile_results.csv .
 # # more mbmesh_$testcase_memory_profile_results.csv | xclip -sel clip
+
+
+if __name__ == '__main__':
+    cli(4,"create")
