@@ -55,48 +55,27 @@ if __name__ == '__main__':
     platform = args.__dict__["platform"]
     runs = args.__dict__["runs"]
 
-    # Parameters
-    # default is Darwin
-    ESMFDIR="/home/ryan/Dropbox/sandbox/esmf"
-    RUNDIR="/home/ryan/MBMeshPerformanceResults"
-    SRCDIR="/home/ryan/Dropbox/sandbox/profiling/Moab"
+    # add config directory to sys.path, regardless of where this script was called from originally
+    sys.path.insert(0,os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "config"))
 
-    if platform == "Linux":
-        ESMFDIR="/home/ryan/Dropbox/sandbox/esmf"
-        RUNDIR="/home/ryan/MBMeshPerformanceResults"
-        SRCDIR="/home/ryan/Dropbox/sandbox/profiling/Moab"
-    elif platform == "Cheyenne":
-        ESMFDIR="/glade/work/rokuingh/sandbox/esmf"
-        RUNDIR="/glade/work/rokuingh/MBMeshPerformanceResults"
-        SRCDIR="/glade/work/rokuingh/sandbox/profiling/Moab"
+    # import platform specific specific parameters
+    config = __import__(platform)
+    ESMFDIR = config.ESMFDIR
+    RUNDIR = config.RUNDIR
+    SRCDIR = config.SRCDIR
 
-    GRID1=os.path.join(SRCDIR,"data", "ll2deg.esmf.nc")
-    GRID2=os.path.join(SRCDIR,"data", "ll2deg.esmf.nc")
-    if testcase == "create":
-        GRID1=os.path.join(SRCDIR,"data", "ll1deg.esmf.nc")
-        GRID2=os.path.join(SRCDIR,"data", "ll1deg.esmf.nc")
-    if testcase == "dual":
-        GRID1=os.path.join(SRCDIR,"data", "ll4deg.esmf.nc")
-        GRID2=os.path.join(SRCDIR,"data", "ll4deg.esmf.nc")
-    if testcase == "grid2mesh":
-        GRID1=os.path.join(SRCDIR,"data", "ll1deg.scrip.nc")
-        GRID2=os.path.join(SRCDIR,"data", "ll1deg.scrip.nc")
+    # import testcase specific platform parameters
+    args = config.testcase_args[testcase]
+    GRID1 = args["GRID1"]
+    GRID2 = args["GRID2"]
 
-    if platform == "Cheyenne":
-        GRID1=os.path.join(SRCDIR,"data", "ll1x2e3deg10e6node.esmf.nc")
-        GRID2=os.path.join(SRCDIR,"data", "ll1x2e3deg10e6node.esmf.nc")
-        if testcase == "create":
-            GRID1=os.path.join(SRCDIR,"data", "ll1x2e4deg10e7node.esmf.nc")
-            GRID2=os.path.join(SRCDIR,"data", "ll1x2e4deg10e7node.esmf.nc")
-        if testcase == "dual":
-            #GRID1=os.path.join(SRCDIR,"data", "ll1x2e2deg10e6node.esmf.nc")
-            #GRID2=os.path.join(SRCDIR,"data", "ll1x2e2deg10e6node.esmf.nc")
-            GRID1=os.path.join(SRCDIR,"data", "ll1x2e0deg10e4node.esmf.nc")
-            GRID2=os.path.join(SRCDIR,"data", "ll1x2e0deg10e4node.esmf.nc")
-        if testcase == "grid2mesh":
-            GRID1=os.path.join(SRCDIR,"data", "ll1x2e4deg10e7node.scrip.nc")
-            GRID2=os.path.join(SRCDIR,"data", "ll1x2e4deg10e7node.scrip.nc")
-
+    print("ESMFDIR = ", ESMFDIR)
+    print("RUNDIR = ", RUNDIR)
+    print("SRCDIR = ", SRCDIR)
+    print("Testcase (", testcase, ") input parameters:")
+    print("  GRID1 = ", GRID1)
+    print("  GRID2 = ", GRID2)
+    print("\n")
 
     procs=(36, 72, 144, 288, 576, 1152, 2304, 4608)
 
