@@ -37,7 +37,7 @@ import click
 
 @click.command()
 @click.option('-np', type=int, required=True, help='Number of processing cores')
-@click.option('-testcase', type=str, required=True, help='Test case  [create,dual,grid2mesh,redist,regrid-bilinear,regrid-conservative,rendezvous]')
+@click.option('-testcase', type=str, required=True, help='Test case  [create,dual,grid2mesh,redist,regridbilinear,regridconservative,rendezvous]')
 @click.option('--branch', type=str, default="mbmesh-redist", help='Branch of the ESMF repo to use')
 @click.option('--esmfmkfile', type=str, default="", help='Path to esmf.mk, will build ESMF if not supplied')
 @click.option('--platform', type=str, default="Darwin", help='Platform configuration [Cheyenne, Darwin, Linux]')
@@ -47,13 +47,13 @@ def cli(np, testcase, branch, esmfmkfile, platform, runs):
     # args = parseArguments()
 
     # Raw print arguments
-    click.echo("\nRunning 'profile.py' with following input parameter values: ")
-    click.echo("-np = ", np)
-    click.echo("-testcase = ", testcase)
-    click.echo("--branch = ", branch)
-    click.echo("--esmfmkfile = ", esmfmkfile)
-    click.echo("--platform = ", platform)
-    click.echo("--runs = ", runs)
+    print("\nRunning 'profile.py' with following input parameter values: ")
+    print("-np = ", np)
+    print("-testcase = ", testcase)
+    print("--branch = ", branch)
+    print("--esmfmkfile = ", esmfmkfile)
+    print("--platform = ", platform)
+    print("--runs = ", runs)
     # for a in args.__dict__:
     #     print(str(a) + ": " + str(args.__dict__[a]))
     # 
@@ -152,4 +152,4 @@ def cli(np, testcase, branch, esmfmkfile, platform, runs):
 
 
 if __name__ == '__main__':
-    cli(4,"create")
+    cli()
