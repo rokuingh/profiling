@@ -19,7 +19,7 @@ PLATFORM=%platform%
 cd $ESMFDIR
 git checkout $BRANCH
 
-export ESMF_BOPT=O; export ESMF_OPTLEVEL=2; export ESMF_ABI=64; unset ESMF_TESTEXHAUSTIVE;
+export ESMF_DIR=$ESMFDIR; export ESMF_BOPT=O; export ESMF_OPTLEVEL=2; export ESMF_ABI=64; unset ESMF_TESTEXHAUSTIVE;
 
 if [[ $PLATFORM == "Cheyenne" ]]; then
     source /etc/profile.d/modules.sh
