@@ -20,7 +20,8 @@ import click
 @click.option('--esmfmkfile', type=str, default="", help='Path to esmf.mk, will build ESMF if not supplied')
 @click.option('--platform', type=str, default="Darwin", help='Platform configuration [Cheyenne, Darwin, Linux]')
 @click.option('--runs', type=int, default=1, help='Number of runs')
-def cli(np, testcase, branch, esmfmkfile, platform, runs):
+@click.option('--gnu10', is_flag=True, default=False, help='Fix for gnu10 ESMF compiler options')
+def cli(np, testcase, branch, esmfmkfile, platform, runs, gnu10):
     # Raw print arguments
     print("\nRunning 'profile.py' with following input parameter values: ")
     print("-np = ", np)
@@ -29,13 +30,13 @@ def cli(np, testcase, branch, esmfmkfile, platform, runs):
     print("--esmfmkfile = ", esmfmkfile)
     print("--platform = ", platform)
     print("--runs = ", runs)
+    print("--gnu10 = ", gnu10)
 
     # add config directory to sys.path, regardless of where this script was called from originally
     sys.path.insert(0,os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "config"))
 
     # import platform specific specific parameters
     config = __import__(platform)
-    ESMFDIR = config.ESMFDIR
     RUNDIR = config.RUNDIR
     SRCDIR = config.SRCDIR
 
@@ -44,7 +45,6 @@ def cli(np, testcase, branch, esmfmkfile, platform, runs):
     GRID1 = args["GRID1"]
     GRID2 = args["GRID2"]
 
-    print("ESMFDIR = ", ESMFDIR)
     print("RUNDIR = ", RUNDIR)
     print("SRCDIR = ", SRCDIR)
     print("Testcase (", testcase, ") input parameters:")
@@ -57,16 +57,16 @@ def cli(np, testcase, branch, esmfmkfile, platform, runs):
     # 1 initialize: build and install esmf and tests with appropriate env vars
     try:
         import initTest
-        ESMFMKFILE = initTest.build_esmf(ESMFDIR, RUNDIR, SRCDIR, testcase, esmfmkfile=esmfmkfile, platform=platform, branch=branch)
-        initTest.build_test(ESMFMKFILE, RUNDIR, SRCDIR, testcase, platform=platform)
+        ESMFMKFILE = initTest.build_esmf(RUNDIR, SRCDIR, testcase, platform, branch, esmfmkfile, gnu10)
+        initTest.build_test(ESMFMKFILE, RUNDIR, SRCDIR, testcase, platform)
     except:
         raise RuntimeError("Error building the tests.")
 
     # 2 run: submit the test runs
     try:
         import runTest
-        EXECDIR = runTest.setup(SRCDIR, RUNDIR, np, runs, testcase, procs, GRID1, GRID2, platform=platform)
-        runTest.run(procs, np, SRCDIR, EXECDIR, platform=platform)
+        EXECDIR = runTest.setup(SRCDIR, RUNDIR, np, runs, testcase, procs, GRID1, GRID2, platform)
+        runTest.run(procs, np, SRCDIR, EXECDIR, platform)
     except:
         raise RuntimeError("Error submitting the tests.")
 

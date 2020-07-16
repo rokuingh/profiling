@@ -1,6 +1,5 @@
 import os
 
-ESMFDIR="/home/ryan/Dropbox/sandbox/esmf"
 RUNDIR="/home/ryan/MBMeshPerformanceResults"
 SRCDIR="/home/ryan/Dropbox/sandbox/profiling/Moab"
 

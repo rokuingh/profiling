@@ -1,6 +1,5 @@
 import os
 
-ESMFDIR="/glade/work/rokuingh/sandbox/esmf"
 RUNDIR="/glade/work/rokuingh/MBMeshPerformanceResults"
 SRCDIR="/glade/work/rokuingh/sandbox/profiling/Moab"
 
