@@ -109,7 +109,9 @@ def make_table(info, logname):
                 # split out the timing result as a string
                 mem = mem.split()[0]
     
-                # convert bytes to kB
+                # convert all measurements to Mb
+                # most measurements from VMLogMemInfo are given in Kb (default)
+                # otherwise, the measurement name includes 'bytes' or 'KiB'
                 if "bytes" in measurement:
                     mem = float(mem)/1E6
                 elif "KiB" in measurement:
