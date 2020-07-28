@@ -3,6 +3,7 @@
 #
 
 import sys, os, re
+from shutil import copy2
 from subprocess import check_call
 from time import localtime, strftime
 
@@ -50,6 +51,7 @@ def esmf(config, testcase, platform, branch, esmfmkfile, gnu10):
                     if exc.errno != errno.EEXIST:
                         raise
             os.chdir(BUILDDIR)
+            copy2(os.path.join(SRCDIR,"buildESMF.pbs"), BUILDDIR)
 
             # checkout ESMF
             esmfgitrepo = "https://github.com/esmf-org/esmf.git"
@@ -65,13 +67,13 @@ def esmf(config, testcase, platform, branch, esmfmkfile, gnu10):
             check_call(["git", "checkout", branch])
 
             # write the pbs script
-            pbscript = os.path.join(BUILDDIR, "buildESMF-"+testcase+".pbs", testcase, ESMFDIR, branch, ESMF_OS, ESMF_COMPILER, ESMF_COMM, ESMF_NETCDF, ESMF_NETCDF_INCLUDE, ESMF_NETCDF_LIBPATH, ESMF_BOPT, str(ESMF_OPTLEVEL), str(ESMF_ABI), ESMF_BUILD_NP, gnu10)
+            pbscript = [os.path.join(BUILDDIR, "buildESMF.pbs"), testcase, ESMFDIR, branch, ESMF_OS, ESMF_COMPILER, ESMF_COMM, ESMF_NETCDF, ESMF_NETCDF_INCLUDE, ESMF_NETCDF_LIBPATH, ESMF_BOPT, str(ESMF_OPTLEVEL), str(ESMF_ABI), str(ESMF_BUILD_NP), str(gnu10)]
 
             # set up the pbs script for submission to qsub on cheyenne or bash otherwise
             if platform == "Cheyenne":
-                run_command = ["qsub", "-W block=true"] + [pbscript]
+                run_command = ["qsub", "-W", "block=true"] + pbscript
             else:  
-                run_command = ["bash"] + [pbscript]
+                run_command = ["bash"] + pbscript
 
             check_call(run_command)
 
