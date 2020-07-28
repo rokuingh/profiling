@@ -7,7 +7,7 @@ import numpy as np
 import subprocess
 from time import localtime, strftime
 
-def timing(EXECDIR, nprocs, runs, testcase, procs, platform="Darwin"):
+def timing(EXECDIR, config, n, runs, testcase, platform):
     try:
         import pandas as pd
     except:
@@ -15,13 +15,15 @@ def timing(EXECDIR, nprocs, runs, testcase, procs, platform="Darwin"):
         exit(0)
 
     print ("\nCollect timing results.")
-    if platform != "Cheyenne": procs = [nprocs]
+
+    procs = config.procs
+    if (n > procs[-1]): raise ValueError("--n cannot be greater than "+str(procs[-1])+". Please adjust the 'procs' values in the configuration file for your platform.")
 
     timeoutfilename = os.path.join(EXECDIR, "mbmesh_"+testcase+"_timing_profile_results.csv")
 
     for num_run in range(1,runs+1):
         for num_procs in procs:
-            if num_procs <= nprocs:
+            if num_procs <= n:
 
                 resfilename = os.path.join(EXECDIR, str(num_procs)+"-"+str(num_run), "ESMF_Profile.summary")
                 rftmp = resfilename+".tmp"
@@ -162,10 +164,11 @@ def process_table(table):
     return nptable
 
 
-def memory(EXECDIR, nprocs, runs, testcase, procs, platform="Darwin"):
+def memory(EXECDIR, config, n, runs, testcase, platform):
     print ("Collect memory results (<20 min):", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
 
-    if platform != "Cheyenne": procs = [nprocs]
+    procs = config.procs
+    if (n > procs[-1]): raise ValueError("--n cannot be greater than "+str(procs[-1])+". Please adjust the 'procs' values in the configuration file for your platform.")
 
     meminfo = [("VmRSS", "VmRSS"), ("VmHWM", "VmHWM"), ("Total allocated space (bytes)", "VmTAS")]
 
@@ -178,7 +181,7 @@ def memory(EXECDIR, nprocs, runs, testcase, procs, platform="Darwin"):
     for num_run in range(1,runs+1):
         # iterate runs of increasing number of processors
         for num_procs in procs:
-            if num_procs <= nprocs:
+            if num_procs <= n:
 
                 msrc = 0
                 # count the number of measurements

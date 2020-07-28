@@ -14,17 +14,17 @@ from time import localtime, strftime, time
 import click
 
 @click.command()
-@click.option('-np', type=int, required=True, help='Number of processing cores')
+@click.option('-n', type=int, required=True, help='Number of processing cores')
 @click.option('-testcase', type=str, required=True, help='Test case  [create,dual,grid2mesh,redist,regridbilinear,regridconservative,rendezvous]')
 @click.option('--branch', type=str, default="mbmesh-redist", help='Branch of the ESMF repo to use')
 @click.option('--esmfmkfile', type=str, default="", help='Path to esmf.mk, will build ESMF if not supplied')
 @click.option('--platform', type=str, default="Darwin", help='Platform configuration [Cheyenne, Darwin, Linux]')
 @click.option('--runs', type=int, default=1, help='Number of runs')
 @click.option('--gnu10', is_flag=True, default=False, help='Fix for gnu10 ESMF compiler options')
-def cli(np, testcase, branch, esmfmkfile, platform, runs, gnu10):
+def cli(n, testcase, branch, esmfmkfile, platform, runs, gnu10):
     # Raw print arguments
     print("\nRunning 'profile.py' with following input parameter values: ")
-    print("-np = ", np)
+    print("-n = ", n)
     print("-testcase = ", testcase)
     print("--branch = ", branch)
     print("--esmfmkfile = ", esmfmkfile)
@@ -37,36 +37,19 @@ def cli(np, testcase, branch, esmfmkfile, platform, runs, gnu10):
 
     # import platform specific specific parameters
     config = __import__(platform)
-    RUNDIR = config.RUNDIR
-    SRCDIR = config.SRCDIR
-
-    # import testcase specific platform parameters
-    args = config.testcase_args[testcase]
-    GRID1 = args["GRID1"]
-    GRID2 = args["GRID2"]
-
-    print("RUNDIR = ", RUNDIR)
-    print("SRCDIR = ", SRCDIR)
-    print("Testcase (", testcase, ") input parameters:")
-    print("  GRID1 = ", GRID1)
-    print("  GRID2 = ", GRID2)
-    print("\n")
-
-    procs=(36, 72, 144, 288, 576, 1152, 2304, 4608)
 
     # 1 initialize: build and install esmf and tests with appropriate env vars
     try:
-        import initTest
-        ESMFMKFILE = initTest.build_esmf(RUNDIR, SRCDIR, testcase, platform, branch, esmfmkfile, gnu10)
-        initTest.build_test(ESMFMKFILE, RUNDIR, SRCDIR, testcase, platform)
+        import init
+        ESMFMKFILE = init.esmf(config, testcase, platform, branch, esmfmkfile, gnu10)
+        init.test(ESMFMKFILE, config, testcase, platform)
     except:
         raise RuntimeError("Error building the tests.")
 
     # 2 run: submit the test runs
     try:
-        import runTest
-        EXECDIR = runTest.setup(SRCDIR, RUNDIR, np, runs, testcase, procs, GRID1, GRID2, platform)
-        runTest.run(procs, np, SRCDIR, EXECDIR, platform)
+        import run
+        EXECDIR = run.test(config, n, runs, testcase, platform)
     except:
         raise RuntimeError("Error submitting the tests.")
 
@@ -76,8 +59,8 @@ def cli(np, testcase, branch, esmfmkfile, platform, runs, gnu10):
 
     try:
         import collectResults
-        timingfile = collectResults.timing(EXECDIR, np, runs, testcase, procs, platform=platform)
-        memoryfile = collectResults.memory(EXECDIR, np, runs, testcase, procs, platform=platform)
+        timingfile = collectResults.timing(EXECDIR, config, n, runs, testcase, platform)
+        memoryfile = collectResults.memory(EXECDIR, config, n, runs, testcase, platform)
 
         print ("Results are in the following files:\n", timingfile, "\n", memoryfile)
     except:

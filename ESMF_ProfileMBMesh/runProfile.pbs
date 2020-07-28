@@ -10,12 +10,12 @@
 
 set -e
 
-np=%np%
-nrun=%nrun%
-EXECDIR=%EXECDIR%
-PLATFORM=%platform%
-grid1=%grid1%
-grid2=%grid2%
+np=$1
+nrun=$2
+EXECDIR=$3
+PLATFORM=$4
+grid1=$5
+grid2=$6
 
 # load the run environment
 if [[ $PLATFORM == "Cheyenne" ]]; then

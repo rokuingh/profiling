@@ -6,16 +6,7 @@ import sys, os, re
 from subprocess import check_call
 from time import localtime, strftime
 
-# source: http://code.activestate.com/recipes/81330/
-def multiple_replace(dict, text):
-  # Create a regular expression  from the dictionary keys
-  regex = re.compile("(%s)" % "|".join(map(re.escape, dict.keys())))
-
-  # For each match, look-up corresponding value in dictionary
-  return regex.sub(lambda mo: dict[mo.string[mo.start():mo.end()]], text) 
-
-def build_esmf(RUNDIR, SRCDIR, testcase, platform, branch, esmfmkfile, gnu10):
-    # # 1.2 initialize: build and install ESMF
+def esmf(config, testcase, platform, branch, esmfmkfile, gnu10):
     ESMFMKFILE=""
     if (esmfmkfile != ""):
         try:
@@ -35,6 +26,20 @@ def build_esmf(RUNDIR, SRCDIR, testcase, platform, branch, esmfmkfile, gnu10):
     else:
         try:
             print ("\nBuild and install ESMF (<30 minutes):", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
+
+            RUNDIR = config.RUNDIR
+            SRCDIR = config.SRCDIR
+            ESMF_OS = config.esmf_env["ESMF_OS"]
+            ESMF_COMPILER = config.esmf_env["ESMF_COMPILER"]
+            ESMF_COMM = config.esmf_env["ESMF_COMM"]
+            ESMF_NETCDF = config.esmf_env["ESMF_NETCDF"]
+            ESMF_NETCDF_INCLUDE = config.esmf_env["ESMF_NETCDF_INCLUDE"]
+            ESMF_NETCDF_LIBPATH = config.esmf_env["ESMF_NETCDF_LIBPATH"]
+            ESMF_BOPT = config.esmf_env["ESMF_BOPT"]
+            ESMF_OPTLEVEL = config.esmf_env["ESMF_OPTLEVEL"]
+            ESMF_ABI = config.esmf_env["ESMF_ABI"]
+            ESMF_BUILD_NP = config.esmf_env["ESMF_BUILD_NP"]
+
 
             # call from RUNDIR to avoid polluting execution dir with output files 
             BUILDDIR = os.path.join(RUNDIR, testcase)
@@ -59,19 +64,8 @@ def build_esmf(RUNDIR, SRCDIR, testcase, platform, branch, esmfmkfile, gnu10):
             os.chdir(ESMFDIR)
             check_call(["git", "checkout", branch])
 
-            # build the pbs script
-            replacements = {"%testcase%" : testcase,
-                            "%esmfdir%" : ESMFDIR,
-                            "%branch%" : branch,
-                            "%platform%" : platform,
-                            "%gnu10%" : str(gnu10)}
-
             # write the pbs script
-            pbscript = os.path.join(BUILDDIR, "buildESMF-"+testcase+".pbs")
-            with open(os.path.join(SRCDIR, "buildESMF.pbs")) as text:
-                new_text = multiple_replace(replacements, text.read())
-            with open(pbscript, "w") as result:
-                result.write(new_text)
+            pbscript = os.path.join(BUILDDIR, "buildESMF-"+testcase+".pbs", testcase, ESMFDIR, branch, ESMF_OS, ESMF_COMPILER, ESMF_COMM, ESMF_NETCDF, ESMF_NETCDF_INCLUDE, ESMF_NETCDF_LIBPATH, ESMF_BOPT, str(ESMF_OPTLEVEL), str(ESMF_ABI), ESMF_BUILD_NP, gnu10)
 
             # set up the pbs script for submission to qsub on cheyenne or bash otherwise
             if platform == "Cheyenne":
@@ -91,11 +85,13 @@ def build_esmf(RUNDIR, SRCDIR, testcase, platform, branch, esmfmkfile, gnu10):
     return ESMFMKFILE
 
 
-def build_test(ESMFMKFILE, RUNDIR, SRCDIR, testcase, platform):
-    # # 1.2 initialize: build the test executable
+def test(ESMFMKFILE, config, testcase, platform):
+    RUNDIR = config.RUNDIR
+    SRCDIR = config.SRCDIR
+
     try:
         print ("Build test executable")
-        test_command = ["bash", os.path.join(SRCDIR, "buildTest.bash"), ESMFMKFILE, RUNDIR, SRCDIR, testcase, platform]
+        test_command = ["bash", os.path.join(SRCDIR, "buildTest.pbs"), ESMFMKFILE, RUNDIR, SRCDIR, testcase, platform]
         check_call(test_command)
     except:
         raise RuntimeError("Error building test executable.")

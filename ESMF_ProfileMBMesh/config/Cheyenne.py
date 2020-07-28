@@ -1,7 +1,17 @@
 import os
 
 RUNDIR="/glade/work/rokuingh/MBMeshPerformanceResults"
-SRCDIR="/glade/work/rokuingh/sandbox/profiling/Moab"
+SRCDIR="/glade/work/rokuingh/sandbox/profiling/ESMF_ProfileMBMesh"
+
+procs=(36, 72, 144, 288, 576, 1152, 2304, 4608)
+
+esmf_env = dict(ESMF_OS = "Linux",
+               ESMF_COMPILER = "intel",
+               ESMF_COMM = "mpt",
+               ESMF_NETCDF = "split",
+               ESMF_NETCDF_INCLUDE="/glade/u/apps/ch/opt/netcdf/4.7.1/intel/18.0.5/include",
+               ESMF_NETCDF_LIBPATH="/glade/u/apps/ch/opt/netcdf/4.7.1/intel/18.0.5/lib",
+               ESMF_BUILD_NP=36)
 
 testcase_args = dict(
     create = dict(GRID1 = os.path.join(SRCDIR,"data", "ll1x2e4deg10e7node.esmf.nc"),

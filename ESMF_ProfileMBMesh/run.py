@@ -55,7 +55,7 @@ def generate_id(ROOTDIR):
             if exc.errno != errno.EEXIST:
                 raise
 
-    return (EXECDIR)
+    return EXECDIR
 
 # source: http://code.activestate.com/recipes/81330/
 def multiple_replace(dict, text):
@@ -65,26 +65,29 @@ def multiple_replace(dict, text):
   # For each match, look-up corresponding value in dictionary
   return regex.sub(lambda mo: dict[mo.string[mo.start():mo.end()]], text) 
 
-def setup(SRCDIR, RUNDIR, np, runs, testcase, procs, GRID1, GRID2, platform):
+def setup(config, n, runs, testcase, platform):
     try:
-        if platform != "Cheyenne": procs = [np]
+        RUNDIR = config.RUNDIR
+        SRCDIR = config.SRCDIR
+        procs = config.procs
+        if (n > procs[-1]): raise ValueError("--n cannot be greater than "+str(procs[-1])+". Please adjust the 'procs' values in the configuration file for your platform.")
+
+        # import testcase specific platform parameters
+        args = config.testcase_args[testcase]
+        GRID1 = args["GRID1"]
+        GRID2 = args["GRID2"]
+
         EXECDIR = generate_id(RUNDIR)
 
         # run all cases in procs that are not larger than input
         for pnum in procs:
-            if pnum <= np:
-
+            if pnum <= n:
                 # calculate the number of nodes required for this batch submission
                 nnum = floor((pnum+36-1)/36)
     
                 # build the qsub file
-                replacements = {"%np%" : str(pnum),
-                                "%nn%" : str(nnum),
-                                "%nrun%" : str(runs),
-                                "%EXECDIR%" : EXECDIR,
-                                "%platform%" : platform,
-                                "%grid1%" : GRID1,
-                                "%grid2%" : GRID2}
+                replacements = {"%n%" : str(pnum),
+                                "%nn%" : str(nnum)}
 
                 with open(os.path.join(SRCDIR, "runProfile.pbs")) as text:
                     new_text = multiple_replace(replacements, text.read())
@@ -111,20 +114,28 @@ def setup(SRCDIR, RUNDIR, np, runs, testcase, procs, GRID1, GRID2, platform):
 def call_script(*args, **kwargs):
     check_call(args)
 
-def run(procs, np, SRCDIR, EXECDIR, platform):
+def test(config, n, runs, testcase, platform):
     try:
         print ("\nSubmit the test runs (<15 minutes):", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
 
-        job_threads = []
+        SRCDIR = config.SRCDIR
+        procs = config.procs
+        # import testcase specific platform parameters
+        args = config.testcase_args[testcase]
+        GRID1 = args["GRID1"]
+        GRID2 = args["GRID2"]
 
+        # set up the execution directory
+        EXECDIR = setup(config, n, runs, testcase, platform)
+        
         # call from EXECDIR to avoid polluting the source directory with output files 
         os.chdir(EXECDIR)
 
-        if platform != "Cheyenne": procs = [np]
-
+        job_threads = []
         for pnum in procs:
-            if pnum <= np:
-                run_command = [os.path.join(EXECDIR, "runProfile"+str(pnum)+".pbs")]
+            if pnum <= n:
+                print 
+                run_command = [os.path.join(EXECDIR, "runProfile"+str(pnum)+".pbs"), str(pnum), str(runs), EXECDIR, platform, GRID1, GRID2]
                 if platform == "Cheyenne":
                     run_command = ["qsub", "-W block=true"] + run_command
                 else:
@@ -142,3 +153,5 @@ def run(procs, np, SRCDIR, EXECDIR, platform):
     
     except:
         raise RuntimeError("Error submitting the tests.")
+
+    return EXECDIR
