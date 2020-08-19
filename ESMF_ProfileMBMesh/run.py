@@ -114,7 +114,16 @@ def setup(config, n, runs, testcase, platform):
 def call_script(*args, **kwargs):
     check_call(args)
 
-def test(config, n, runs, testcase, platform):
+def test(config, clickargs):
+
+    n = clickargs["n"]
+    testcase = clickargs["testcase"]
+    branch = clickargs["branch"]
+    esmfmkfile = clickargs["esmfmkfile"]
+    platform = clickargs["platform"]
+    runs = clickargs["runs"]
+    gnu10 = clickargs["gnu10"]
+
     try:
         print ("\nSubmit the test runs (<15 minutes):", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
 

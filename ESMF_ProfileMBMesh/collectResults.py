@@ -7,7 +7,7 @@ import numpy as np
 import subprocess
 from time import localtime, strftime
 
-def timing(EXECDIR, config, n, runs, testcase, platform):
+def timing(EXECDIR, config, clickargs):
     try:
         import pandas as pd
     except:
@@ -15,6 +15,14 @@ def timing(EXECDIR, config, n, runs, testcase, platform):
         exit(0)
 
     print ("\nCollect timing results.")
+
+    n = clickargs["n"]
+    testcase = clickargs["testcase"]
+    branch = clickargs["branch"]
+    esmfmkfile = clickargs["esmfmkfile"]
+    platform = clickargs["platform"]
+    runs = clickargs["runs"]
+    gnu10 = clickargs["gnu10"]
 
     procs = config.procs
     if (n > procs[-1]): raise ValueError("--n cannot be greater than "+str(procs[-1])+". Please adjust the 'procs' values in the configuration file for your platform.")
@@ -164,8 +172,16 @@ def process_table(table):
     return nptable
 
 
-def memory(EXECDIR, config, n, runs, testcase, platform):
+def memory(EXECDIR, config, clickargs):
     print ("Collect memory results (<20 min):", strftime("%a, %d %b %Y %H:%M:%S", localtime()))
+
+    n = clickargs["n"]
+    testcase = clickargs["testcase"]
+    branch = clickargs["branch"]
+    esmfmkfile = clickargs["esmfmkfile"]
+    platform = clickargs["platform"]
+    runs = clickargs["runs"]
+    gnu10 = clickargs["gnu10"]
 
     procs = config.procs
     if (n > procs[-1]): raise ValueError("--n cannot be greater than "+str(procs[-1])+". Please adjust the 'procs' values in the configuration file for your platform.")

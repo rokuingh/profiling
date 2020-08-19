@@ -38,18 +38,26 @@ def cli(n, testcase, branch, esmfmkfile, platform, runs, gnu10):
     # import platform specific specific parameters
     config = __import__(platform)
 
+    clickargs = {"n" : n,
+                 "testcase": testcase,
+                 "branch": branch,
+                 "esmfmkfile": esmfmkfile,
+                 "platform": platform,
+                 "runs": runs,
+                 "gnu10": gnu10}
+
     # 1 initialize: build and install esmf and tests with appropriate env vars
     try:
         import init
-        ESMFMKFILE = init.esmf(config, testcase, platform, branch, esmfmkfile, gnu10)
-        init.test(ESMFMKFILE, config, testcase, platform)
+        ESMFMKFILE = init.esmf(config, clickargs)
+        init.test(ESMFMKFILE, config, clickargs)
     except:
         raise RuntimeError("Error building the tests.")
 
     # 2 run: submit the test runs
     try:
         import run
-        EXECDIR = run.test(config, n, runs, testcase, platform)
+        EXECDIR = run.test(config, clickargs)
     except:
         raise RuntimeError("Error submitting the tests.")
 
@@ -59,8 +67,8 @@ def cli(n, testcase, branch, esmfmkfile, platform, runs, gnu10):
 
     try:
         import collectResults
-        timingfile = collectResults.timing(EXECDIR, config, n, runs, testcase, platform)
-        memoryfile = collectResults.memory(EXECDIR, config, n, runs, testcase, platform)
+        timingfile = collectResults.timing(EXECDIR, config, clickargs)
+        memoryfile = collectResults.memory(EXECDIR, config, clickargs)
 
         print ("Results are in the following files:\n", timingfile, "\n", memoryfile)
     except:

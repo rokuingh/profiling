@@ -7,7 +7,14 @@ from shutil import copy2
 from subprocess import check_call
 from time import localtime, strftime
 
-def esmf(config, testcase, platform, branch, esmfmkfile, gnu10):
+def esmf(config, clickargs):
+
+    testcase = clickargs["testcase"]
+    branch = clickargs["branch"]
+    esmfmkfile = clickargs["esmfmkfile"]
+    platform = clickargs["platform"]
+    gnu10 = clickargs["gnu10"]
+
     ESMFMKFILE=""
     if (esmfmkfile != ""):
         try:
@@ -41,7 +48,6 @@ def esmf(config, testcase, platform, branch, esmfmkfile, gnu10):
             ESMF_ABI = config.esmf_env["ESMF_ABI"]
             ESMF_BUILD_NP = config.esmf_env["ESMF_BUILD_NP"]
 
-
             # call from RUNDIR to avoid polluting execution dir with output files 
             BUILDDIR = os.path.join(RUNDIR, testcase)
             if not os.path.isdir(BUILDDIR):
@@ -66,8 +72,8 @@ def esmf(config, testcase, platform, branch, esmfmkfile, gnu10):
             os.chdir(ESMFDIR)
             check_call(["git", "checkout", branch])
 
-            # write the pbs script
-            pbscript = [os.path.join(BUILDDIR, "buildESMF.pbs"), testcase, ESMFDIR, branch, ESMF_OS, ESMF_COMPILER, ESMF_COMM, ESMF_NETCDF, ESMF_NETCDF_INCLUDE, ESMF_NETCDF_LIBPATH, ESMF_BOPT, str(ESMF_OPTLEVEL), str(ESMF_ABI), str(ESMF_BUILD_NP), str(gnu10)]
+            # set up the call to the pbs script
+            pbscript = [os.path.join(BUILDDIR, "buildESMF.pbs"), ESMFDIR, branch, platform, testcase, str(gnu10), ESMF_OS, ESMF_COMPILER, ESMF_COMM, ESMF_NETCDF, ESMF_NETCDF_INCLUDE, ESMF_NETCDF_LIBPATH, ESMF_BOPT, str(ESMF_OPTLEVEL), str(ESMF_ABI), str(ESMF_BUILD_NP)]
 
             # set up the pbs script for submission to qsub on cheyenne or bash otherwise
             if platform == "Cheyenne":
@@ -87,14 +93,21 @@ def esmf(config, testcase, platform, branch, esmfmkfile, gnu10):
     return ESMFMKFILE
 
 
-def test(ESMFMKFILE, config, testcase, platform):
+def test(ESMFMKFILE, config, clickargs):
     RUNDIR = config.RUNDIR
     SRCDIR = config.SRCDIR
 
+    testcase = clickargs["testcase"]
+    platform = clickargs["platform"]
+
     try:
         print ("Build test executable")
+
+        os.chdir(os.path.join(SRCDIR, testcase))
+
         test_command = ["bash", os.path.join(SRCDIR, "buildTest.pbs"), ESMFMKFILE, RUNDIR, SRCDIR, testcase, platform]
         check_call(test_command)
+
     except:
         raise RuntimeError("Error building test executable.")
 
