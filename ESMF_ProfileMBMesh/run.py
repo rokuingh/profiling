@@ -70,7 +70,7 @@ def setup(config, n, runs, testcase):
         GRID2 = args["GRID2"]
 
         EXECDIR = generate_id(RUNDIR)
-        os.copy2(os.path.join(SRCDIR, "runProfile.pbs"), EXECDIR)
+        copy2(os.path.join(SRCDIR, "runProfile.pbs"), EXECDIR)
 
         # run all cases in procs that are not larger than input
         for pnum in procs:
