@@ -5,7 +5,7 @@ SRCDIR="/Users/oehmke/sandbox/profiling/ESMF_ProfileMBMesh"
 
 procs=(1, 2, 4)
 
-esmf_env = dict(ESMF_OS = "Linux",
+esmf_env = dict(ESMF_OS = "Darwin",
                 ESMF_COMPILER = "gfortran",
                 ESMF_COMM = "openmpi",
                 ESMF_NETCDF = "split",
