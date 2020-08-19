@@ -57,15 +57,7 @@ def generate_id(ROOTDIR):
 
     return EXECDIR
 
-# source: http://code.activestate.com/recipes/81330/
-def multiple_replace(dict, text):
-  # Create a regular expression  from the dictionary keys
-  regex = re.compile("(%s)" % "|".join(map(re.escape, dict.keys())))
-
-  # For each match, look-up corresponding value in dictionary
-  return regex.sub(lambda mo: dict[mo.string[mo.start():mo.end()]], text) 
-
-def setup(config, n, runs, testcase, platform):
+def setup(config, n, runs, testcase):
     try:
         RUNDIR = config.RUNDIR
         SRCDIR = config.SRCDIR
@@ -78,22 +70,11 @@ def setup(config, n, runs, testcase, platform):
         GRID2 = args["GRID2"]
 
         EXECDIR = generate_id(RUNDIR)
+        os.copy2(os.path.join(SRCDIR, "runProfile.pbs"), EXECDIR)
 
         # run all cases in procs that are not larger than input
         for pnum in procs:
             if pnum <= n:
-                # calculate the number of nodes required for this batch submission
-                nnum = floor((pnum+36-1)/36)
-    
-                # build the qsub file
-                replacements = {"%n%" : str(pnum),
-                                "%nn%" : str(nnum)}
-
-                with open(os.path.join(SRCDIR, "runProfile.pbs")) as text:
-                    new_text = multiple_replace(replacements, text.read())
-                with open(os.path.join(EXECDIR, "runProfile"+str(pnum)+".pbs"), "w") as result:
-                    result.write(new_text)
-
                 for ind in range(1,runs+1):
                     # create a separate directory to run each executable nrun times to  give
                     PROCRUNDIR = os.path.join(EXECDIR,str(pnum)+"-"+str(ind))
@@ -135,7 +116,7 @@ def test(config, clickargs):
         GRID2 = args["GRID2"]
 
         # set up the execution directory
-        EXECDIR = setup(config, n, runs, testcase, platform)
+        EXECDIR = setup(config, n, runs, testcase)
         
         # call from EXECDIR to avoid polluting the source directory with output files 
         os.chdir(EXECDIR)
@@ -143,12 +124,20 @@ def test(config, clickargs):
         job_threads = []
         for pnum in procs:
             if pnum <= n:
-                print 
-                run_command = [os.path.join(EXECDIR, "runProfile"+str(pnum)+".pbs"), str(pnum), str(runs), EXECDIR, platform, GRID1, GRID2]
+                pbs_esmf = os.path.join(EXECDIR, "runProfile.pbs")
+                pbs_args = [str(pnum), str(runs), EXECDIR, platform, GRID1, GRID2]
+
+                run_command = ""
                 if platform == "Cheyenne":
-                    run_command = ["qsub", "-W block=true"] + run_command
-                else:
-                    run_command = ["bash"] + run_command
+                    # calculate the number of nodes required for this batch submission
+                    nnum = floor((pnum+36-1)/36)
+
+                    run_command = ["qsub", "-N", "runProfile"+str(pnum), "-A", "P93300606", "-l",
+                                   "walltime=00:30:00", "-q", "economy", "-l",
+                                   "select="+str(nnum)+":ncpus=36:mpiprocs=36", "-j", "oe", "-m", "n",
+                                   "-W", "block=true", "--", pbs_esmf] + pbs_args
+                else:  
+                    run_command = ["bash", pbs_esmf] + pbs_args
 
                 job_threads.append(PropagatingThread(target=call_script, args=run_command))
         
