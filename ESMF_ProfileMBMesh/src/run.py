@@ -121,6 +121,9 @@ def test(config, clickargs):
         # call from EXECDIR to avoid polluting the source directory with output files 
         os.chdir(EXECDIR)
 
+        # guard against bad input
+        if n < procs[0]: raise RuntimeError("Input 'n' is less than minimum number of procs for this platform.")
+
         job_threads = []
         for pnum in procs:
             if pnum <= n:
