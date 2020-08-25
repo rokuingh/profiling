@@ -16,11 +16,11 @@ import click
 @click.command()
 @click.option('-n', type=int, required=True, help='Number of processing cores')
 @click.option('-testcase', type=str, required=True, help='Test case  [create,dual,grid2mesh,redist,regridbilinear,regridconservative,rendezvous]')
-@click.option('--branch', type=str, default="mbmesh-redist", help='Branch of the ESMF repo to use')
+@click.option('--branch', type=str, default="develop", help='Branch of the ESMF repo to use, defaults to develop')
 @click.option('--esmfmkfile', type=str, default="", help='Path to esmf.mk, will build ESMF if not supplied')
-@click.option('--platform', type=str, default="Darwin", help='Platform configuration [Cheyenne, Darwin, Linux]')
-@click.option('--runs', type=int, default=1, help='Number of runs')
-@click.option('--gnu10', is_flag=True, default=False, help='Fix for gnu10 ESMF compiler options')
+@click.option('--platform', type=str, default="Darwin", help='Platform configuration [Cheyenne, Darwin, Linux], defaults to Darwin')
+@click.option('--runs', type=int, default=1, help='Number of runs, defaults to 1')
+@click.option('--gnu10', is_flag=True, default=False, help='Fix for gnu10 ESMF compiler options, defaults to False')
 def cli(n, testcase, branch, esmfmkfile, platform, runs, gnu10):
     # Raw print arguments
     print("\nRunning 'profile.py' with following input parameter values: ")
@@ -48,7 +48,7 @@ def cli(n, testcase, branch, esmfmkfile, platform, runs, gnu10):
 
     # 1 initialize: build and install esmf and tests with appropriate env vars
     try:
-        import init
+        from src import init
         ESMFMKFILE = init.esmf(config, clickargs)
         init.test(ESMFMKFILE, config, clickargs)
     except:
@@ -56,7 +56,7 @@ def cli(n, testcase, branch, esmfmkfile, platform, runs, gnu10):
 
     # 2 run: submit the test runs
     try:
-        import run
+        from src import run
         EXECDIR = run.test(config, clickargs)
     except:
         raise RuntimeError("Error submitting the tests.")
@@ -66,7 +66,7 @@ def cli(n, testcase, branch, esmfmkfile, platform, runs, gnu10):
         raise EnvironmentError ("Sorry, Python 3.5 or higher is required for test result collection.")
 
     try:
-        import collectResults
+        from src import collectResults
         timingfile = collectResults.timing(EXECDIR, config, clickargs)
         memoryfile = collectResults.memory(EXECDIR, config, clickargs)
 

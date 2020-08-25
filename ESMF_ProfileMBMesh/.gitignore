@@ -1,9 +1,9 @@
 __pycache__
-old/serial_create/runs
-create/MOAB_eval_create
-dual/MOAB_eval_dual
-grid2mesh/MOAB_eval_grid2mesh
-redist/MOAB_eval_redist
-regrid-bilinear/MOAB_eval_regrid-bilinear
-regrid-conservative/MOAB_eval_regrid-conservative
-rendezvous/MOAB_eval_rendezvous
+src/old/serial_create/runs
+src/create/MOAB_eval_create
+src/dual/MOAB_eval_dual
+src/grid2mesh/MOAB_eval_grid2mesh
+src/redist/MOAB_eval_redist
+src/regrid-bilinear/MOAB_eval_regrid-bilinear
+src/regrid-conservative/MOAB_eval_regrid-conservative
+src/rendezvous/MOAB_eval_rendezvous
